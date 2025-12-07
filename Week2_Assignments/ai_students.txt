@@ -1,0 +1,5 @@
+1    Aarav        Computer Science     88     B
+2    Saanvi       Mathematics          95     A
+3    Vihaan       Physics              82     B
+4    Aaradhya     Biology              91     A
+5    Arjun        Data Science         79     C
