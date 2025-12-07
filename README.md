@@ -1,6 +1,8 @@
 # GenAI Internship – Zeno Talent
 
-This repository contains my work and learning progress from the GenAI Internship at Zeno Talent, where I explore LLMs, prompt engineering, and practical Generative AI development. I am Bhuvanesh M, a 2nd-year Computer Science Engineering student, passionate about AI, automation, and building real-world projects. I enjoy experimenting with GenAI, Linux, and modern software tools to improve my skills and create useful applications.
+This repository contains my work and learning progress from the GenAI Internship at Zeno Talent, where I explore LLMs, prompt engineering, and practical Generative AI development. 
+
+I am Bhuvanesh M, a 2nd-year Computer Science Engineering student, passionate about AI, automation, and building real-world projects. I enjoy experimenting with GenAI, Linux, and modern software tools to improve my skills and create useful applications.
 
 ## What This Repo Includes
 
