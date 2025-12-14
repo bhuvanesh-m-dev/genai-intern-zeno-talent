@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 3 – GenAI Internship Assignments | Bhuvanesh M</title>
+    <meta name="description" content="Portfolio of Week 3 GenAI Internship Assignments completed by Bhuvanesh M under Zeno Talent.">
+    <style>
+        /* Modern Dark Theme - CSS Variables */
+        :root {
+            --bg-color: #0f1115;
+            --card-bg: #1e2126;
+            --accent-color: #00d4ff;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --hover-color: #00b8e6;
+            --border-radius: 8px;
+            --spacing-unit: 1.5rem;
+            --font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        /* Reset & Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        /* Layout Container */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #333;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--accent-color);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .focus-areas {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            background-color: rgba(0, 212, 255, 0.1);
+            color: var(--accent-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        /* Exercise Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        /* Exercise Card Styling */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            border: 1px solid #333;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            border-color: var(--accent-color);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #fff;
+            border-left: 3px solid var(--accent-color);
+            padding-left: 1rem;
+        }
+
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Feature List Styling */
+        h3 {
+            font-size: 1rem;
+            color: #ccc;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        ul {
+            list-style-type: none;
+            margin-bottom: 2rem;
+        }
+
+        li {
+            padding: 0.25rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: #d1d1d1;
+        }
+
+        li::before {
+            content: "▹";
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+        }
+
+        /* Button Styling */
+        .btn {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: #000;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--hover-color);
+            color: #fff;
+        }
+
+        .file-link {
+            font-family: monospace;
+            font-size: 0.9rem;
+            margin-left: 0.5rem;
+            color: #666;
+        }
+
+        /* Footer Section */
+        footer {
+            margin-top: 4rem;
+            text-align: center;
+            border-top: 1px solid #333;
+            padding-top: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .footer-highlight {
+            color: var(--accent-color);
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>Week 3 – GenAI Internship Assignments</h1>
+            <div class="subtitle">Completed under Zeno Talent · GenAI Internship</div>
+            
+            <div class="focus-areas">
+                <span class="tag">Input Validation</span>
+                <span class="tag">Error Handling</span>
+                <span class="tag">NumPy</span>
+                <span class="tag">File Processing</span>
+                <span class="tag">API Integration</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="grid">
+            
+            <!-- Exercise 1 -->
+            <article class="card">
+                <h2>Age Calculator</h2>
+                <p>A robust script that calculates exact age from a date of birth with comprehensive format handling.</p>
+                
+                <h3>Key Features</h3>
+                <ul>
+                    <li>Strict MM/DD/YYYY format validation</li>
+                    <li>Automatic leap year calculations</li>
+                    <li>Conversion support for European date formats</li>
+                    <li>Graceful error handling for invalid inputs</li>
+                </ul>
+
+                <a href="bhuvanesh_m_age_calculator.py" class="btn" target="_blank">View Code</a>
+            </article>
+
+            <!-- Exercise 2 -->
+            <article class="card">
+                <h2>Prime Number Generator</h2>
+                <p>An efficient generator that identifies prime numbers within a specified range.</p>
+                
+                <h3>Key Features</h3>
+                <ul>
+                    <li>Input validation for positive integers</li>
+                    <li>Optimized prime detection logic</li>
+                    <li>Clean, formatted output (10 per line)</li>
+                    <li>Performance-focused iteration</li>
+                </ul>
+
+                <a href="bhuvanesh_m_prime_numbers.py" class="btn" target="_blank">View Code</a>
+            </article>
+
+            <!-- Exercise 3 -->
+            <article class="card">
+                <h2>Student Marks Processor</h2>
+                <p>Data processing tool utilizing NumPy to analyze student performance and generate reports.</p>
+                
+                <h3>Key Features</h3>
+                <ul>
+                    <li>Reads and parses raw text data</li>
+                    <li>Calculates weighted marks and assignments</li>
+                    <li>Uses NumPy structured arrays for sorting</li>
+                    <li>Generates detailed output files (results.txt)</li>
+                </ul>
+
+                <a href="bhuvanesh_m_student_marks_processor.py" class="btn" target="_blank">View Code</a>
+            </article>
+
+            <!-- Exercise 4 -->
+            <article class="card">
+                <h2>Weather Data Analyzer</h2>
+                <p>Real-time weather fetching application integrating with the OpenWeatherMap API.</p>
+                
+                <h3>Key Features</h3>
+                <ul>
+                    <li>Fetches live data via OpenWeatherMap API</li>
+                    <li>Categorizes temperature (Hot/Cold/Moderate)</li>
+                    <li>Alerts system for extreme wind & humidity</li>
+                    <li>Logs historical data to CSV format</li>
+                </ul>
+
+                <a href="bhuvanesh_m_open_weather_map_.py" class="btn" target="_blank">View Code</a>
+            </article>
+
+        </main>
+
+        <!-- Footer -->
+        <footer>
+            <p>Developed by <a href="https://bhuvaneshm.in" target="_blank" class="footer-highlight">Bhuvanesh M</a></p>
+
+            <p>GenAI Internship (Zeno Talent) · 2025</p>
+        </footer>
+    </div>
+
+</body>
+</html>
