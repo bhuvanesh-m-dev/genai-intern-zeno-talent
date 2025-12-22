@@ -13,7 +13,7 @@ The objective of this assignment is to:
 - Python
 - NumPy
 - Matplotlib
-- Google Colab / Jupyter Notebook
+- Google Colab 
 
 ## Input Values Used
 The following input values were used to observe the behavior of each activation function for negative, zero, and positive inputs:
