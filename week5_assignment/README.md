@@ -46,7 +46,7 @@ This exercise strengthened my foundation in:
 ## 🔗 Learning Page
 
 👉 **URL:**  
-https://bhuvanesh-m-dev.github.io
+https://bhuvanesh-m-dev.github.io/genai-intern-zeno-talent/What%20I%20Learned%20from%20This%20Internship/week5
 
 *(Replace this link with your real webpage or GitHub Pages link.)*
 
