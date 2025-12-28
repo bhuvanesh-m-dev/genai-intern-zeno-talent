@@ -37,3 +37,13 @@ These skills directly support future GenAI tasks like dataset cleaning, model I/
 ## ⭐ Notes
 
 These assignments help build a strong base for upcoming advanced GenAI work in Week 3 and beyond.
+
+---
+
+## 🔗 Learning Page
+
+👉 **URL:**  
+https://bhuvanesh-m-dev.github.io/genai-intern-zeno-talent/What%20I%20Learned%20from%20This%20Internship/week2
+
+
+---
