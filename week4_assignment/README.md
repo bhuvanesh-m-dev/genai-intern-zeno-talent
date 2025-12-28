@@ -154,7 +154,7 @@ Activation-Functions-GenAI/
 ## 🔗 Learning Page
 
 👉 **URL:**  
-https://bhuvanesh-m-dev.github.io/genai-intern-zeno-talent/What%20I%20Learned%20from%20This%20Internship/week5
+https://bhuvanesh-m-dev.github.io/genai-intern-zeno-talent/What%20I%20Learned%20from%20This%20Internship/week4
 
 
 ---
