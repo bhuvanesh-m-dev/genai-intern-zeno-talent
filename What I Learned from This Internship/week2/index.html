@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 2: Python Foundations | Bhuvanesh M</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#0f172a',
+                            primary: '#3b82f6',
+                            secondary: '#8b5cf6',
+                            accent: '#06b6d4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Glassmorphism utilities */
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            background: rgba(30, 41, 59, 0.6);
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-5px);
+        }
+
+        /* Animated Background */
+        .bg-grid {
+            background-size: 50px 50px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(to right, #3b82f6, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Code Block Styling */
+        .code-snippet {
+            font-family: 'JetBrains Mono', monospace;
+            background: #1e293b;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            border-left: 4px solid #3b82f6;
+        }
+    </style>
+</head>
+<body class="bg-brand-dark text-slate-200 font-sans antialiased overflow-x-hidden selection:bg-brand-primary selection:text-white">
+
+    <!-- Background Elements -->
+    <div class="fixed inset-0 bg-grid z-0 pointer-events-none"></div>
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10">
+        <div class="absolute top-[10%] right-[10%] w-[30%] h-[30%] bg-blue-600/20 rounded-full blur-[100px]"></div>
+        <div class="absolute bottom-[20%] left-[10%] w-[30%] h-[30%] bg-purple-600/20 rounded-full blur-[100px]"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass border-b-0 border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0 flex items-center gap-3 cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <div class="w-8 h-8 rounded bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">B</div>
+                    <span class="font-bold text-xl tracking-tight text-white">Bhuvanesh M</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent" target="_blank" class="px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-white/10 transition-all">
+                            <i class="fab fa-github mr-2"></i>Repo
+                        </a>
+                        <a href="https://bhuvanesh-m-dev.github.io" target="_blank" class="px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-white/10 transition-all">Portfolio</a>
+                        <a href="https://www.linkedin.com/in/bhuvaneshm-developer" target="_blank" class="px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-white/10 transition-all">LinkedIn</a>
+                    </div>
+                </div>
+                <div class="-mr-2 flex md:hidden">
+                    <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="hidden md:hidden glass border-t border-white/10" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-white/10">GitHub Repo</a>
+                <a href="https://bhuvanesh-m-dev.github.io" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/10">Portfolio</a>
+                <a href="https://www.linkedin.com/in/bhuvaneshm-developer" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/10">LinkedIn</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div data-aos="fade-up" class="inline-block px-4 py-1.5 mb-6 rounded-full glass border border-blue-500/30 text-blue-300 text-sm font-semibold tracking-wide uppercase">
+                Week 2 • Zeno Talent Internship
+            </div>
+            <h1 data-aos="fade-up" data-aos-delay="100" class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-6">
+                Python Foundations & <br class="hidden sm:block" />
+                <span class="gradient-text">Real-World Logic</span>
+            </h1>
+            <p data-aos="fade-up" data-aos-delay="200" class="mt-4 max-w-2xl mx-auto text-xl text-slate-400">
+                Strengthening core skills in data structures, file handling, and logical operations to build efficient AI-ready applications.
+            </p>
+            <div data-aos="fade-up" data-aos-delay="300" class="mt-10 flex justify-center gap-4">
+                <a href="#topics" class="px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg transition-all shadow-lg shadow-blue-500/25">
+                    Explore Concepts
+                </a>
+                <a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent" target="_blank" class="px-8 py-3 border border-slate-600 text-base font-medium rounded-lg text-slate-200 hover:bg-slate-800 md:py-4 md:text-lg glass transition-all">
+                    <i class="fab fa-github mr-2"></i> View Code
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 space-y-24">
+
+        <!-- Concepts Grid -->
+        <section id="topics" class="scroll-mt-24">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <!-- Card 1: Basics -->
+                <div class="glass-card p-8 rounded-2xl" data-aos="fade-up" data-aos-delay="0">
+                    <div class="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center text-blue-400 mb-6">
+                        <i class="fas fa-code fa-lg"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Basics & Operators</h3>
+                    <p class="text-slate-400 mb-4 text-sm leading-relaxed">
+                        Revised key programming fundamentals including variables, data types, and arithmetic/logical operators to form the base for efficient programs.
+                    </p>
+                    <div class="code-snippet text-xs text-slate-300">
+                        x = 10<br>
+                        if x > 5 and x < 20:<br>
+                        &nbsp;&nbsp;print("Logic Verified")
+                    </div>
+                </div>
+
+                <!-- Card 2: Lists & Arrays -->
+                <div class="glass-card p-8 rounded-2xl" data-aos="fade-up" data-aos-delay="100">
+                    <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center text-purple-400 mb-6">
+                        <i class="fas fa-list-ol fa-lg"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Lists & Arrays</h3>
+                    <p class="text-slate-400 mb-4 text-sm leading-relaxed">
+                        Mastered collections for indexing, slicing, searching, and sorting. Essential for managing datasets in data-driven applications.
+                    </p>
+                    <div class="code-snippet text-xs text-slate-300">
+                        data = [1, 5, 8, 3]<br>
+                        sorted_data = sorted(data)<br>
+                        # Result: [1, 3, 5, 8]
+                    </div>
+                </div>
+
+                <!-- Card 3: Dictionaries & Sets -->
+                <div class="glass-card p-8 rounded-2xl" data-aos="fade-up" data-aos-delay="200">
+                    <div class="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center text-cyan-400 mb-6">
+                        <i class="fas fa-network-wired fa-lg"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-3">Dictionaries & Sets</h3>
+                    <p class="text-slate-400 mb-4 text-sm leading-relaxed">
+                        Utilized key-value mappings for O(1) lookups and sets for uniqueness. Critical for structured data storage and filtering.
+                    </p>
+                    <div class="code-snippet text-xs text-slate-300">
+                        user = {"id": 1, "role": "admin"}<br>
+                        unique_ids = set([1, 1, 2, 3])
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Deep Dive: File Handling -->
+        <section class="glass rounded-3xl p-8 lg:p-12 border border-white/10" data-aos="fade-right">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-sm font-semibold mb-4">
+                        <i class="fas fa-file-code"></i> I/O Operations
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-6">File Handling in Python</h2>
+                    <p class="text-slate-400 leading-relaxed mb-6">
+                        Moving beyond in-memory variables, I worked with reading, writing, and processing text files. This is a crucial skill for real-world AI pipelines where data persists in logs and datasets.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-database text-green-400 mt-1 mr-3"></i>
+                            <div>
+                                <strong class="text-slate-200 block">Dataset Preprocessing</strong>
+                                <span class="text-slate-500 text-sm">Cleaning and preparing raw data files for models.</span>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-robot text-green-400 mt-1 mr-3"></i>
+                            <div>
+                                <strong class="text-slate-200 block">Automation Scripts</strong>
+                                <span class="text-slate-500 text-sm">Automating log analysis and report generation.</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="relative">
+                    <!-- abstract visual for files -->
+                    <div class="absolute -inset-1 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl blur opacity-25"></div>
+                    <div class="relative bg-slate-900 rounded-xl p-6 border border-slate-700 font-mono text-sm text-slate-300 shadow-2xl">
+                        <div class="flex gap-1.5 mb-4 border-b border-slate-700 pb-4">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <p><span class="text-purple-400">with</span> <span class="text-blue-400">open</span>('<span class="text-green-400">data.txt</span>', '<span class="text-green-400">r</span>') <span class="text-purple-400">as</span> file:</p>
+                        <p class="pl-4">lines = file.readlines()</p>
+                        <p class="pl-4"><span class="text-purple-400">for</span> line <span class="text-purple-400">in</span> lines:</p>
+                        <p class="pl-8">process_data(line.strip())</p>
+                        <p class="mt-4 text-slate-500"># Output: Efficiently reading large datasets line by line.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mini Project Section -->
+        <section class="text-center" data-aos="zoom-in">
+            <h2 class="text-3xl font-bold text-white mb-12">Real-World Application</h2>
+            <div class="relative max-w-4xl mx-auto glass p-1 rounded-2xl">
+                <div class="bg-brand-dark rounded-xl p-8 md:p-12 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl -mr-16 -mt-16"></div>
+                    <div class="absolute bottom-0 left-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl -ml-16 -mb-16"></div>
+                    
+                    <div class="flex flex-col md:flex-row items-center gap-8">
+                        <div class="flex-shrink-0 w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                            <i class="fas fa-project-diagram text-3xl text-white"></i>
+                        </div>
+                        <div class="text-left">
+                            <h3 class="text-2xl font-bold text-white mb-3">The Mini-Project</h3>
+                            <p class="text-slate-400 mb-4">
+                                I consolidated all week 2 concepts into a functional mini-project. This bridged the gap between theoretical syntax and practical utility.
+                            </p>
+                            <p class="text-slate-300 font-medium">
+                                <i class="fas fa-check text-blue-400 mr-2"></i> Logic Translation
+                                <span class="mx-2 text-slate-600">|</span>
+                                <i class="fas fa-check text-blue-400 mr-2"></i> Problem Solving
+                                <span class="mx-2 text-slate-600">|</span>
+                                <i class="fas fa-check text-blue-400 mr-2"></i> Clean Architecture
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Learnings Summary -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" data-aos="fade-up">
+            <div class="p-6 rounded-xl border border-white/5 bg-slate-800/30">
+                <h4 class="text-blue-400 font-bold mb-2">Backbone of AI</h4>
+                <p class="text-sm text-slate-400">Python data structures are fundamental for organizing the massive data needed for AI workflows.</p>
+            </div>
+            <div class="p-6 rounded-xl border border-white/5 bg-slate-800/30">
+                <h4 class="text-purple-400 font-bold mb-2">Efficiency</h4>
+                <p class="text-sm text-slate-400">Lists, sets, and dictionaries enable O(1) or optimized retrieval, crucial for performance.</p>
+            </div>
+            <div class="p-6 rounded-xl border border-white/5 bg-slate-800/30">
+                <h4 class="text-cyan-400 font-bold mb-2">Data Persistence</h4>
+                <p class="text-sm text-slate-400">File handling is essential. AI models don't just live in RAM; they ingest logs and datasets.</p>
+            </div>
+            <div class="p-6 rounded-xl border border-white/5 bg-slate-800/30">
+                <h4 class="text-green-400 font-bold mb-2">Scalability</h4>
+                <p class="text-sm text-slate-400">Modular coding and logical thinking lead to programs that can grow without breaking.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass border-t border-white/10 mt-12 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <!-- Column 1 -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-4">Week 2 Assignment</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Documenting my progress in Python foundations, automation, and GenAI at Zeno Talent.
+                    </p>
+                </div>
+                <!-- Column 2 -->
+                <div class="md:text-center">
+                    <h3 class="text-xl font-bold text-white mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm text-slate-400">
+                        <li><a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent" class="hover:text-blue-400 transition-colors">GitHub Repository</a></li>
+                        <li><a href="https://bhuvanesh-m-dev.github.io" class="hover:text-blue-400 transition-colors">My Portfolio</a></li>
+                    </ul>
+                </div>
+                <!-- Column 3 -->
+                <div class="md:text-right">
+                    <h3 class="text-xl font-bold text-white mb-4">Connect</h3>
+                    <div class="flex md:justify-end gap-4">
+                        <a href="https://x.com/bhuvaneshm06" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-white hover:text-black transition-all">
+                            <!-- X Logo -->
+                            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                        </a>
+                        <a href="https://www.linkedin.com/in/bhuvaneshm-developer" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-[#0077b5] hover:text-white transition-all">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="https://dev.to/bhuvaneshm_dev" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-black hover:text-white transition-all">
+                            <i class="fab fa-dev fa-lg"></i>
+                        </a>
+                        <a href="https://github.com/bhuvanesh-m-dev" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-white hover:text-black transition-all">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-white/10 pt-8 text-center">
+                <p class="text-slate-500 text-sm">© 2025 - Present Bhuvanesh M.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 80,
+            easing: 'ease-out-cubic'
+        });
+
+        // Sticky Nav Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 20) {
+                nav.classList.add('shadow-lg');
+            } else {
+                nav.classList.remove('shadow-lg');
+            }
+        });
+    </script>
+</body>
+</html>
