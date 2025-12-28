@@ -69,3 +69,13 @@ Week 3 focuses on applying Python skills to real-world scenarios, including:
 - Error-tolerant program design  
 
 These tasks directly support future GenAI use cases, such as dataset handling, intelligent agents, and AI-assisted decision systems.
+
+---
+
+## 🔗 Learning Page
+
+👉 **URL:**  
+https://bhuvanesh-m-dev.github.io/genai-intern-zeno-talent/What%20I%20Learned%20from%20This%20Internship/week3
+
+
+---
