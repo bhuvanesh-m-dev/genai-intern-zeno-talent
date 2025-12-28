@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 4: Activation Functions | Bhuvanesh M</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#0f172a',
+                            primary: '#3b82f6',
+                            secondary: '#8b5cf6',
+                            accent: '#06b6d4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Glassmorphism utilities */
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Animated Background */
+        .bg-grid {
+            background-size: 50px 50px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(to right, #ec4899, #8b5cf6, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .plot-container img {
+            transition: transform 0.3s ease;
+        }
+        .plot-container:hover img {
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="bg-brand-dark text-slate-200 font-sans antialiased overflow-x-hidden selection:bg-brand-primary selection:text-white">
+
+    <!-- Background Elements -->
+    <div class="fixed inset-0 bg-grid z-0 pointer-events-none"></div>
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10">
+        <div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-pink-600/20 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/20 rounded-full blur-[120px]"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass border-b-0 border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0 flex items-center gap-3 cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <div class="w-8 h-8 rounded bg-gradient-to-br from-pink-500 to-indigo-500 flex items-center justify-center text-white font-bold">B</div>
+                    <span class="font-bold text-xl tracking-tight text-white">Bhuvanesh M</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent" target="_blank" class="px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-white/10 transition-all">
+                            <i class="fab fa-github mr-2"></i>Repo
+                        </a>
+                        <a href="https://bhuvanesh-m-dev.github.io" target="_blank" class="px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-white/10 transition-all">Portfolio</a>
+                        <a href="https://www.linkedin.com/in/bhuvaneshm-developer" target="_blank" class="px-3 py-2 rounded-md text-sm font-medium hover:text-white hover:bg-white/10 transition-all">LinkedIn</a>
+                    </div>
+                </div>
+                <div class="-mr-2 flex md:hidden">
+                    <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div class="hidden md:hidden glass border-t border-white/10" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-white/10">GitHub Repo</a>
+                <a href="https://bhuvanesh-m-dev.github.io" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/10">Portfolio</a>
+                <a href="https://www.linkedin.com/in/bhuvaneshm-developer" class="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-white/10">LinkedIn</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div data-aos="fade-up" class="inline-block px-4 py-1.5 mb-6 rounded-full glass border border-pink-500/30 text-pink-300 text-sm font-semibold tracking-wide uppercase">
+                Week 4 • Zeno Talent Internship
+            </div>
+            <h1 data-aos="fade-up" data-aos-delay="100" class="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-6">
+                Visualizing <br class="hidden sm:block" />
+                <span class="gradient-text">Activation Functions</span>
+            </h1>
+            <p data-aos="fade-up" data-aos-delay="200" class="mt-4 max-w-2xl mx-auto text-xl text-slate-400">
+                Exploring neural network non-linearity. How Sigmoid, Tanh, and ReLU transform inputs and influence model learning behavior.
+            </p>
+            <div data-aos="fade-up" data-aos-delay="300" class="mt-10 flex justify-center gap-4">
+                <a href="#sigmoid" class="px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-pink-600 hover:bg-pink-700 md:py-4 md:text-lg transition-all shadow-lg shadow-pink-500/25">
+                    Start Exploration
+                </a>
+                <a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent/tree/main/week4_assignment" target="_blank" class="px-8 py-3 border border-slate-600 text-base font-medium rounded-lg text-slate-200 hover:bg-slate-800 md:py-4 md:text-lg glass transition-all">
+                    <i class="fab fa-github mr-2"></i> View Code
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Content Wrapper -->
+    <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 space-y-24">
+
+        <!-- Sigmoid Section -->
+        <section id="sigmoid" class="scroll-mt-24">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="order-2 lg:order-1" data-aos="fade-right">
+                    <div class="glass rounded-2xl p-2 border border-white/10 plot-container shadow-2xl">
+                        <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week4_assignment/images/sigmoid.png" 
+                             alt="Sigmoid Activation Function" 
+                             class="rounded-xl w-full h-auto bg-white"
+                             onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Sigmoid+Image'">
+                    </div>
+                </div>
+                <div class="order-1 lg:order-2" data-aos="fade-left">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-pink-500/20 rounded-lg text-pink-400">
+                            <i class="fas fa-wave-square fa-lg"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold text-white">Sigmoid Activation</h2>
+                    </div>
+                    <p class="text-lg text-slate-400 leading-relaxed mb-6">
+                        Maps inputs into a range between <span class="text-white font-mono">0</span> and <span class="text-white font-mono">1</span>, forming an S-shaped curve. Commonly used in binary classification models to predict probabilities.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-exclamation-triangle text-yellow-500 mt-1.5 mr-3"></i>
+                            <span class="text-slate-300">Can cause vanishing-gradient issues for extreme values.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-400 mt-1.5 mr-3"></i>
+                            <span class="text-slate-300">Smooth gradient, preventing jumps in output.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tanh Section -->
+        <section id="tanh" class="scroll-mt-24">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="order-1" data-aos="fade-right">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-purple-500/20 rounded-lg text-purple-400">
+                            <i class="fas fa-arrows-alt-h fa-lg"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold text-white">Tanh Activation</h2>
+                    </div>
+                    <p class="text-lg text-slate-400 leading-relaxed mb-6">
+                        Outputs values between <span class="text-white font-mono">-1</span> and <span class="text-white font-mono">+1</span>. It is zero-centered, which generally helps in gradient-based learning compared to Sigmoid.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-400 mt-1.5 mr-3"></i>
+                            <span class="text-slate-300">Zero-centered output aids convergence.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-exclamation-triangle text-yellow-500 mt-1.5 mr-3"></i>
+                            <span class="text-slate-300">Still susceptible to gradient saturation at extremes.</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="order-2" data-aos="fade-left">
+                    <div class="glass rounded-2xl p-2 border border-white/10 plot-container shadow-2xl">
+                        <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week4_assignment/images/tanh.png" 
+                             alt="Tanh Activation Function" 
+                             class="rounded-xl w-full h-auto bg-white"
+                             onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Tanh+Image'">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ReLU Section -->
+        <section id="relu" class="scroll-mt-24">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="order-2 lg:order-1" data-aos="fade-right">
+                    <div class="glass rounded-2xl p-2 border border-white/10 plot-container shadow-2xl">
+                        <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week4_assignment/images/relu.png" 
+                             alt="ReLU Activation Function" 
+                             class="rounded-xl w-full h-auto bg-white"
+                             onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=ReLU+Image'">
+                    </div>
+                </div>
+                <div class="order-1 lg:order-2" data-aos="fade-left">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-blue-500/20 rounded-lg text-blue-400">
+                            <i class="fas fa-bolt fa-lg"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold text-white">ReLU (Rectified Linear Unit)</h2>
+                    </div>
+                    <p class="text-lg text-slate-400 leading-relaxed mb-6">
+                        Outputs zero for negative values and a linear response for positive values. It is computationally efficient and currently the most widely used activation function.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-400 mt-1.5 mr-3"></i>
+                            <span class="text-slate-300">Fast computation and convergence.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-exclamation-triangle text-red-400 mt-1.5 mr-3"></i>
+                            <span class="text-slate-300">Risk of "Dead Neurons" where neurons stop activating entirely.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Leaky ReLU Section -->
+        <section id="leaky-relu" class="scroll-mt-24">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="order-1" data-aos="fade-right">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
+                            <i class="fas fa-angle-double-right fa-lg"></i>
+                        </div>
+                        <h2 class="text-3xl font-bold text-white">Leaky ReLU</h2>
+                    </div>
+                    <p class="text-lg text-slate-400 leading-relaxed mb-6">
+                        Introduces a small slope for negative values (e.g., 0.01x), preventing neurons from becoming inactive and ensuring gradient flow continues during training.
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-400 mt-1.5 mr-3"></i>
+                            <span class="text-slate-300">Solves the "Dead ReLU" problem.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-400 mt-1.5 mr-3"></i>
+                            <span class="text-slate-300">Maintains advantages of ReLU while improving stability.</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="order-2" data-aos="fade-left">
+                    <div class="glass rounded-2xl p-2 border border-white/10 plot-container shadow-2xl">
+                        <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week4_assignment/images/leaky_relu.png" 
+                             alt="Leaky ReLU Activation Function" 
+                             class="rounded-xl w-full h-auto bg-white"
+                             onerror="this.src='https://placehold.co/600x400/1e293b/FFF?text=Leaky+ReLU+Image'">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Learnings Card -->
+        <section class="max-w-5xl mx-auto" data-aos="zoom-in-up">
+            <div class="glass rounded-3xl p-8 md:p-12 border border-white/10 relative overflow-hidden">
+                <!-- Decorative background blob -->
+                <div class="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl"></div>
+                
+                <h2 class="text-3xl font-bold text-white mb-8 text-center"><i class="fas fa-brain text-pink-400 mr-3"></i>Key Takeaways</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-800/50 p-6 rounded-xl border border-white/5 hover:border-pink-500/30 transition-colors">
+                        <h3 class="text-xl font-semibold text-pink-300 mb-2">Non-Linearity</h3>
+                        <p class="text-slate-400 text-sm">Activation functions introduce non-linearity, enabling neural networks to learn complex patterns beyond simple linear regression.</p>
+                    </div>
+                    <div class="bg-slate-800/50 p-6 rounded-xl border border-white/5 hover:border-purple-500/30 transition-colors">
+                        <h3 class="text-xl font-semibold text-purple-300 mb-2">Gradient Flow</h3>
+                        <p class="text-slate-400 text-sm">Different functions affect training speed. Sigmoid/Tanh can vanish, while ReLU families generally support faster training.</p>
+                    </div>
+                    <div class="bg-slate-800/50 p-6 rounded-xl border border-white/5 hover:border-blue-500/30 transition-colors">
+                        <h3 class="text-xl font-semibold text-blue-300 mb-2">Efficiency vs. Dead Neurons</h3>
+                        <p class="text-slate-400 text-sm">ReLU is computationally cheap but risks dead neurons. Leaky ReLU fixes this by allowing small negative gradients.</p>
+                    </div>
+                    <div class="bg-slate-800/50 p-6 rounded-xl border border-white/5 hover:border-indigo-500/30 transition-colors">
+                        <h3 class="text-xl font-semibold text-indigo-300 mb-2">Visualization</h3>
+                        <p class="text-slate-400 text-sm">Plotting these curves provided a clear, intuitive understanding of how data transforms layer by layer.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="glass border-t border-white/10 mt-12 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <!-- Column 1 -->
+                <div>
+                    <h3 class="text-xl font-bold text-white mb-4">Week 4 Assignment</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Documenting my deep dive into neural networks and activation functions as part of my internship at Zeno Talent.
+                    </p>
+                </div>
+                <!-- Column 2 -->
+                <div class="md:text-center">
+                    <h3 class="text-xl font-bold text-white mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-sm text-slate-400">
+                        <li><a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent" class="hover:text-pink-400 transition-colors">GitHub Repository</a></li>
+                        <li><a href="https://bhuvanesh-m-dev.github.io" class="hover:text-pink-400 transition-colors">My Portfolio</a></li>
+                    </ul>
+                </div>
+                <!-- Column 3 -->
+                <div class="md:text-right">
+                    <h3 class="text-xl font-bold text-white mb-4">Connect</h3>
+                    <div class="flex md:justify-end gap-4">
+                        <a href="https://x.com/bhuvaneshm06" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-white hover:text-black transition-all">
+                             <!-- SVG for X logo -->
+                            <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                        </a>
+                        <a href="https://www.linkedin.com/in/bhuvaneshm-developer" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-[#0077b5] hover:text-white transition-all">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="https://dev.to/bhuvaneshm_dev" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-black hover:text-white transition-all">
+                            <i class="fab fa-dev fa-lg"></i>
+                        </a>
+                        <a href="https://github.com/bhuvanesh-m-dev" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-white hover:text-black transition-all">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-white/10 pt-8 text-center">
+                <p class="text-slate-500 text-sm">© 2025 - Present Bhuvanesh M.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize Animate On Scroll
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100,
+            easing: 'ease-out-cubic'
+        });
+
+        // Sticky Nav Blur Effect
+        window.addEventListener('scroll', () => {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 20) {
+                nav.classList.add('shadow-lg');
+            } else {
+                nav.classList.remove('shadow-lg');
+            }
+        });
+    </script>
+</body>
+</html>
