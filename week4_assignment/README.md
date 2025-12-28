@@ -147,3 +147,14 @@ Activation-Functions-GenAI/
 - Implement backpropagation
 - Build a simple neural network using NumPy
 - Transition to PyTorch or TensorFlow
+
+
+---
+
+## 🔗 Learning Page
+
+👉 **URL:**  
+https://bhuvanesh-m-dev.github.io/genai-intern-zeno-talent/What%20I%20Learned%20from%20This%20Internship/week5
+
+
+---
