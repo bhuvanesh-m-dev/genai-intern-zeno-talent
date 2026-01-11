@@ -53,7 +53,7 @@ The dataset is used to build a regression model that learns the relationship bet
 
 ### 📊 Linear Regression Prediction Graph
 
-![Cosmic Linear Regression Output](cosmic_linear_regression.png)
+![Cosmic Linear Regression Output](https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week6_assignment/cosmic_linear_regression.png)
 
 This graph shows:
 
@@ -107,6 +107,14 @@ This project uses the **Cosmic Dataset** sourced from Kaggle:
 All credits for the dataset collection and curation go to the original author. This project uses the dataset strictly for **educational and learning purposes**.
 
 ---
+
+## 🔗 Learning Page
+
+👉 **URL:**  
+https://bhuvanesh-m-dev.github.io/genai-intern-zeno-talent/What%20I%20Learned%20from%20This%20Internship/week5
+
+
+---  
 
 🧩 *This project is part of my continuous learning journey in Machine Learning fundamentals and applied model building.*
 
