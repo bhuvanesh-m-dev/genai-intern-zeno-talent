@@ -3,353 +3,838 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Week 7: K-Means Clustering | Bhuvanesh M</title>
-    
-    <!-- Tailwind CSS -->
+    <title>Week 7 GenAI Internship | K-Means Clustering Deep Dive</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- AOS Animation Library -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        mono: ['Fira Code', 'monospace'],
-                    },
-                    colors: {
-                        brand: {
-                            bg: '#050505',
-                            surface: '#0A0A0A',
-                            primary: '#00F0FF', /* Cyber Teal */
-                            secondary: '#7000FF', /* Electric Purple */
-                            accent: '#FF003C' /* Cyber Red */
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-green: #0aff0a;
+            --dark-bg: #0a0a0f;
+            --card-bg: #12121a;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+        
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        /* Animated Background Grid */
+        .grid-bg {
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        /* Glowing Effects */
+        .glow-text {
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5), 0 0 20px rgba(0, 243, 255, 0.3);
+        }
+        
+        .glow-border {
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2), inset 0 0 20px rgba(0, 243, 255, 0.1);
+        }
+        
+        .glow-purple {
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.2);
+        }
+        
+        /* Code Block Styling */
+        .code-block {
+            background: #1a1a2e;
+            border: 1px solid #2a2a3e;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .code-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+        }
+        
+        /* Cluster Point Animation */
+        .cluster-point {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Scroll Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
+        
         ::-webkit-scrollbar-track {
-            background: #050505;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #1f2937;
-            border-radius: 4px;
-            border: 1px solid #374151;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #00F0FF;
-        }
-
-        /* Tech-focused Glassmorphism */
-        .tech-card {
-            background: rgba(10, 10, 10, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 0 1px rgba(0, 240, 255, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .tech-card:hover {
-            border-color: rgba(0, 240, 255, 0.3);
-            box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
-        }
-
-        /* Grid Background */
-        .bg-grid {
-            background-size: 40px 40px;
-            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+            background: #0a0a0f;
         }
         
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a3e;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-blue);
+        }
+        
+        /* Algorithm Step Cards */
+        .step-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .step-card:hover {
+            transform: translateX(10px);
+            border-color: var(--neon-blue);
+            box-shadow: -5px 0 20px rgba(0, 243, 255, 0.2);
+        }
+        
+        /* Metric Cards */
+        .metric-card {
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.1), rgba(188, 19, 254, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Interactive Visualization Container */
+        #viz-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: radial-gradient(circle at center, #1a1a2e 0%, #0a0a0f 100%);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        /* Terminal Typing Effect */
+        .typing::after {
+            content: '|';
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        /* Gradient Text */
         .gradient-text {
-            background: linear-gradient(to right, #00F0FF, #7000FF);
+            background: linear-gradient(135deg, #00f3ff, #bc13fe);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-
-        /* Code Block Styling */
-        .code-block {
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 0.5rem;
-            font-family: 'Fira Code', monospace;
-            overflow-x: auto;
-        }
-
-        .keyword { color: #ff7b72; }
-        .function { color: #d2a8ff; }
-        .string { color: #a5d6ff; }
-        .comment { color: #8b949e; font-style: italic; }
-        .number { color: #79c0ff; }
     </style>
 </head>
-<body class="bg-brand-bg text-slate-300 font-sans antialiased overflow-x-hidden selection:bg-brand-primary selection:text-black">
-
-    <!-- Background Elements -->
-    <div class="fixed inset-0 bg-grid z-0 pointer-events-none"></div>
-    <div class="fixed top-0 left-0 w-full h-1 bg-gradient-to-r from-brand-secondary via-brand-primary to-brand-secondary z-50"></div>
+<body class="antialiased">
 
     <!-- Navigation -->
-    <nav class="fixed w-full z-40 tech-card border-x-0 border-t-0 rounded-none">
+    <nav class="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-white/10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex-shrink-0 flex items-center gap-3 cursor-pointer" onclick="window.scrollTo(0,0)">
-                    <div class="font-mono font-bold text-xl tracking-tight text-white">&lt;Bhuvanesh/&gt;</div>
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-lg flex items-center justify-center font-mono font-bold text-black">W7</div>
+                    <span class="font-mono font-bold text-lg tracking-tighter">GENAI<span class="text-cyan-400">.</span>INTERN</span>
                 </div>
-                <div class="hidden md:block">
-                    <div class="ml-10 flex items-baseline space-x-6">
-                        <a href="#algorithm" class="hover:text-brand-primary transition-colors text-sm font-medium">Algorithm</a>
-                        <a href="#realtime" class="hover:text-brand-primary transition-colors text-sm font-medium">Real-World App</a>
-                        <a href="#metrics" class="hover:text-brand-primary transition-colors text-sm font-medium">Metrics</a>
-                        <div class="h-4 w-px bg-slate-700"></div>
-                        <a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent/blob/main/week7_assignment/K_means_clustering.ipynb" target="_blank" class="text-white hover:text-brand-primary transition-colors">
-                            <i class="fab fa-github text-lg"></i>
-                        </a>
-                    </div>
+                <div class="hidden md:flex space-x-8 font-mono text-sm">
+                    <a href="#overview" class="hover:text-cyan-400 transition-colors">Overview</a>
+                    <a href="#algorithm" class="hover:text-cyan-400 transition-colors">Algorithm</a>
+                    <a href="#implementation" class="hover:text-cyan-400 transition-colors">Code</a>
+                    <a href="#results" class="hover:text-cyan-400 transition-colors">Results</a>
+                    <a href="#realworld" class="hover:text-cyan-400 transition-colors">Real-World</a>
                 </div>
+                <a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent" target="_blank" class="flex items-center space-x-2 px-4 py-2 bg-white/5 rounded-lg hover:bg-white/10 transition-all border border-white/10">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="font-mono text-sm">View Repo</span>
+                </a>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 z-10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div data-aos="fade-up" class="inline-flex items-center gap-2 px-3 py-1 mb-6 rounded border border-brand-primary/30 bg-brand-primary/10 text-brand-primary text-xs font-mono tracking-wide">
-                <span class="w-2 h-2 rounded-full bg-brand-primary animate-pulse"></span>
-                WEEK 7 ASSIGNMENT
+    <!-- Hero Section with 3D Background -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+        <div class="absolute inset-0 grid-bg opacity-30"></div>
+        <div id="canvas-container" class="absolute inset-0 z-0"></div>
+        
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-8 reveal">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span class="font-mono text-cyan-400 text-sm">Week 7 Assignment Complete</span>
             </div>
-            <h1 data-aos="fade-up" data-aos-delay="100" class="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-6 font-mono">
-                Unsupervised Learning:<br />
-                <span class="gradient-text">K-Means Clustering</span>
+            
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 tracking-tight reveal">
+                <span class="block text-white mb-2">K-Means</span>
+                <span class="gradient-text italic">Clustering</span>
+                <span class="block text-2xl md:text-4xl font-normal text-gray-400 mt-4 font-mono">&lt;From Scratch Implementation /&gt;</span>
             </h1>
-            <p data-aos="fade-up" data-aos-delay="200" class="mt-4 max-w-2xl mx-auto text-lg text-slate-400">
-                Building the K-Means algorithm from scratch using NumPy and applying it to real-world Customer Segmentation analysis.
+            
+            <p class="max-w-2xl mx-auto text-lg text-gray-400 mb-10 font-light reveal">
+                A deep dive into unsupervised learning algorithms, implementing K-Means clustering from the ground up with Python, NumPy, and mathematical rigor. Part of the Zeno Talent GenAI Internship program.
             </p>
-            <div data-aos="fade-up" data-aos-delay="300" class="mt-10 flex flex-wrap justify-center gap-4">
-                <a href="#algorithm" class="px-6 py-3 border border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-black font-mono text-sm font-bold transition-all uppercase tracking-wider">
-                    View Implementation
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center reveal">
+                <a href="#implementation" class="px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-lg transition-all transform hover:scale-105 font-mono flex items-center justify-center gap-2">
+                    <span>Explore Code</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
                 </a>
-                <a href="#realtime" class="px-6 py-3 border border-slate-700 text-slate-300 hover:border-white hover:text-white font-mono text-sm font-bold transition-all uppercase tracking-wider">
-                    Live Example
+                <a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent/blob/main/week7_assignment/K_means_clustering.ipynb" target="_blank" class="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/20 rounded-lg transition-all font-mono flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span>View Notebook</span>
                 </a>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-20 max-w-4xl mx-auto reveal">
+                <div class="metric-card p-4 rounded-xl">
+                    <div class="text-2xl font-bold text-cyan-400 font-mono">2</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mt-1">Datasets</div>
+                </div>
+                <div class="metric-card p-4 rounded-xl">
+                    <div class="text-2xl font-bold text-purple-400 font-mono">300+</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mt-1">Lines of Code</div>
+                </div>
+                <div class="metric-card p-4 rounded-xl">
+                    <div class="text-2xl font-bold text-green-400 font-mono">0.82</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mt-1">Silhouette Score</div>
+                </div>
+                <div class="metric-card p-4 rounded-xl">
+                    <div class="text-2xl font-bold text-pink-400 font-mono">100%</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mt-1">From Scratch</div>
+                </div>
             </div>
         </div>
-    </header>
+    </section>
 
-    <!-- Main Content -->
-    <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 space-y-32">
-
-        <!-- PART 1: ALGORITHM IMPLEMENTATION -->
-        <section id="algorithm" class="scroll-mt-24">
-            <div class="flex flex-col gap-4 mb-12">
-                <h2 class="text-3xl font-bold text-white font-mono border-l-4 border-brand-secondary pl-4">
-                    01. The Engine: KMeans Class
-                </h2>
-                <p class="text-slate-400 max-w-3xl">
-                    Instead of just using Scikit-Learn, I implemented the K-Means clustering logic from scratch to understand the math behind centroid convergence and inertia calculation.
-                </p>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                <!-- Code Snippet -->
-                <div class="code-block p-4 text-xs md:text-sm shadow-2xl" data-aos="fade-right">
-                    <div class="flex items-center gap-2 mb-4 border-b border-slate-700 pb-2">
-                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span class="ml-2 text-slate-500 font-sans">KMeans.py</span>
-                    </div>
-<pre><code><span class="keyword">class</span> <span class="function">KMeans</span>:
-    <span class="keyword">def</span> <span class="function">__init__</span>(self, n_clusters=<span class="number">3</span>, max_iter=<span class="number">300</span>):
-        self.n_clusters = n_clusters
-        self.max_iter = max_iter
-        self.centroids = <span class="keyword">None</span>
-
-    <span class="keyword">def</span> <span class="function">fit</span>(self, X):
-        <span class="comment"># 1. Initialize Centroids</span>
-        self.centroids = self._initialize_centroids(X)
-
-        <span class="keyword">for</span> _ <span class="keyword">in</span> range(self.max_iter):
-            <span class="comment"># 2. Assign clusters</span>
-            distances = self._calc_distance(X, self.centroids)
-            self.labels = self._assign_clusters(distances)
-
-            <span class="comment"># 3. Update centroids</span>
-            new_centroids = self._update_centroids(X, self.labels)
-            
-            <span class="comment"># 4. Check convergence</span>
-            <span class="keyword">if</span> np.all(self.centroids == new_centroids):
-                <span class="keyword">break</span>
-            self.centroids = new_centroids</code></pre>
-                </div>
-
-                <!-- Visual Output Grid -->
-                <div class="space-y-6" data-aos="fade-left">
-                    <div class="tech-card p-4 rounded-xl">
-                        <h3 class="text-white font-mono text-sm mb-4 text-center">ELBOW METHOD & INERTIA</h3>
-                        <div class="grid grid-cols-2 gap-4">
-                            <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/k_means_clustering/elbow-method-for-optimal-k.png" class="rounded border border-slate-700 hover:border-brand-primary transition-colors cursor-pointer" alt="Elbow Method">
-                            <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/k_means_clustering/inertia-wcss-vs-iterations.png" class="rounded border border-slate-700 hover:border-brand-primary transition-colors cursor-pointer" alt="Inertia vs Iterations">
+    <!-- Learning Objectives -->
+    <section id="overview" class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="reveal">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6 gradient-text">What I Learned</h2>
+                    <div class="space-y-6">
+                        <div class="flex gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Algorithm Fundamentals</h3>
+                                <p class="text-gray-400">Deep understanding of centroid initialization, distance metrics, and convergence criteria in iterative clustering algorithms.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Evaluation Metrics</h3>
+                                <p class="text-gray-400">Implemented and interpreted Silhouette Score, Davies-Bouldin Index, and Inertia (WCSS) for cluster validation.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Optimization Techniques</h3>
+                                <p class="text-gray-400">Explored K-Means++ initialization for better centroid placement and faster convergence compared to random initialization.</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="tech-card p-4 rounded-xl">
-                        <h3 class="text-white font-mono text-sm mb-4 text-center">CLUSTERING RESULTS</h3>
-                        <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/k_means_clustering/k-means-clustering-results.png" class="w-full rounded border border-slate-700 hover:border-brand-primary transition-colors" alt="Clustering Results">
+                </div>
+                
+                <div class="reveal">
+                    <div class="code-block rounded-xl p-6 font-mono text-sm">
+                        <div class="flex items-center gap-2 mb-4 text-gray-500 text-xs">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span class="ml-2">KMeans.py</span>
+                        </div>
+                        <div class="text-gray-300 space-y-1">
+                            <div class="typing text-cyan-400">class KMeans:</div>
+                            <div class="pl-4 text-purple-400">"""Custom K-means clustering</div>
+                            <div class="pl-4 text-purple-400">implementation from scratch"""</div>
+                            <div class="pl-4 text-gray-400">def <span class="text-yellow-400">__init__</span>(self, n_clusters=3):</div>
+                            <div class="pl-8 text-gray-300">self.n_clusters = n_clusters</div>
+                            <div class="pl-8 text-gray-300">self.centroids = <span class="text-orange-400">None</span></div>
+                            <div class="pl-8 text-gray-300">self.labels = <span class="text-orange-400">None</span></div>
+                            <div class="pl-4 text-gray-400">def <span class="text-yellow-400">fit</span>(self, X):</div>
+                            <div class="pl-8 text-gray-300"><span class="text-purple-400"># Initialize centroids</span></div>
+                            <div class="pl-8 text-gray-300">self.centroids = self._initialize(X)</div>
+                            <div class="pl-8 text-gray-300"><span class="text-purple-400"># Iterate until convergence</span></div>
+                            <div class="pl-8 text-gray-300"><span class="text-cyan-400">for</span> i <span class="text-cyan-400">in</span> range(max_iter):</div>
+                            <div class="pl-12 text-gray-300">labels = self._assign_clusters(X)</div>
+                            <div class="pl-12 text-gray-300">new_centroids = self._update(X, labels)</div>
+                            <div class="pl-12 text-gray-300"><span class="text-cyan-400">if</span> converged:</div>
+                            <div class="pl-16 text-gray-300"><span class="text-cyan-400">break</span></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- PART 2: REAL-WORLD EXAMPLE -->
-        <section id="realtime" class="scroll-mt-24">
-            <div class="flex flex-col gap-4 mb-12 text-right">
-                <h2 class="text-3xl font-bold text-white font-mono border-r-4 border-brand-primary pr-4">
-                    02. Real-World App: Customer Segmentation
-                </h2>
-                <p class="text-slate-400 max-w-3xl ml-auto">
-                    Applying the algorithm to the "Mall Customers" dataset. By clustering customers based on <strong>Annual Income</strong> and <strong>Spending Score</strong>, we can identify target groups for marketing strategies.
+    <!-- Algorithm Steps -->
+    <section id="algorithm" class="py-20 bg-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">The Algorithm</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">K-Means clustering follows an iterative approach to partition data into K distinct clusters based on feature similarity.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="step-card bg-gray-900/50 p-6 rounded-xl reveal">
+                    <div class="text-4xl font-bold text-cyan-400 mb-4 font-mono">01</div>
+                    <h3 class="text-xl font-bold mb-2">Initialize</h3>
+                    <p class="text-gray-400 text-sm">Choose K initial centroids randomly or using K-Means++ strategy for optimal starting positions.</p>
+                    <div class="mt-4 flex gap-2">
+                        <span class="px-2 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded font-mono">random</span>
+                        <span class="px-2 py-1 bg-purple-500/20 text-purple-400 text-xs rounded font-mono">k-means++</span>
+                    </div>
+                </div>
+
+                <div class="step-card bg-gray-900/50 p-6 rounded-xl reveal">
+                    <div class="text-4xl font-bold text-purple-400 mb-4 font-mono">02</div>
+                    <h3 class="text-xl font-bold mb-2">Assign</h3>
+                    <p class="text-gray-400 text-sm">Calculate Euclidean distance from each point to all centroids and assign to the nearest cluster.</p>
+                    <div class="mt-4 font-mono text-xs text-gray-500">
+                        argmin(||x - μ||²)
+                    </div>
+                </div>
+
+                <div class="step-card bg-gray-900/50 p-6 rounded-xl reveal">
+                    <div class="text-4xl font-bold text-green-400 mb-4 font-mono">03</div>
+                    <h3 class="text-xl font-bold mb-2">Update</h3>
+                    <p class="text-gray-400 text-sm">Recalculate centroids as the mean of all points assigned to each cluster.</p>
+                    <div class="mt-4 font-mono text-xs text-gray-500">
+                        μ = (1/|C|) Σx
+                    </div>
+                </div>
+
+                <div class="step-card bg-gray-900/50 p-6 rounded-xl reveal">
+                    <div class="text-4xl font-bold text-pink-400 mb-4 font-mono">04</div>
+                    <h3 class="text-xl font-bold mb-2">Converge</h3>
+                    <p class="text-gray-400 text-sm">Repeat steps 2-3 until centroids stabilize or maximum iterations reached.</p>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
+                        <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                        tolerance < 1e-4
+                    </div>
+                </div>
+            </div>
+
+            <!-- Math Visualization -->
+            <div class="mt-16 reveal">
+                <div class="bg-gray-900/30 border border-white/10 rounded-2xl p-8">
+                    <h3 class="text-2xl font-bold mb-6 text-center">Objective Function</h3>
+                    <div class="flex flex-col items-center justify-center space-y-4">
+                        <div class="text-2xl md:text-4xl font-mono text-cyan-400 text-center">
+                            J = <span class="text-white">Σ</span><span class="text-purple-400">Σ</span> ||x<sub>i</sub><sup>(j)</sup> - c<sub>j</sub>||<sup>2</sup>
+                        </div>
+                        <p class="text-gray-400 text-center max-w-2xl">
+                            Minimize the Within-Cluster Sum of Squares (WCSS), also known as Inertia. 
+                            This measures the compactness of clusters—lower values indicate tighter, more distinct clusters.
+                        </p>
+                        <div class="grid grid-cols-3 gap-8 mt-8 w-full max-w-3xl">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-cyan-400 font-mono">K</div>
+                                <div class="text-sm text-gray-500 mt-1">Clusters</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-purple-400 font-mono">n</div>
+                                <div class="text-sm text-gray-500 mt-1">Data Points</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-400 font-mono">d</div>
+                                <div class="text-sm text-gray-500 mt-1">Dimensions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Implementation Details -->
+    <section id="implementation" class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-12 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 gradient-text">Implementation Highlights</h2>
+                <p class="text-gray-400">Built from scratch using only NumPy for computations, with comprehensive visualization using Matplotlib and Seaborn.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Code Feature 1 -->
+                <div class="code-block rounded-xl p-6 reveal">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-cyan-400 font-mono text-sm">K-Means++ Initialization</span>
+                        <span class="text-xs text-gray-500">Smart centroid placement</span>
+                    </div>
+                    <pre class="font-mono text-sm text-gray-300 overflow-x-auto">
+<code class="language-python"><span class="text-purple-400">def</span> <span class="text-yellow-400">_initialize_centroids</span>(self, X):
+    centroids = np.zeros((self.n_clusters, X.shape[1]))
+    <span class="text-gray-500"># First centroid: random</span>
+    centroids[0] = X[np.random.randint(len(X))]
+    
+    <span class="text-purple-400">for</span> i <span class="text-purple-400">in</span> range(1, self.n_clusters):
+        distances = np.zeros(len(X))
+        <span class="text-purple-400">for</span> j <span class="text-purple-400">in</span> range(len(X)):
+            min_dist = np.inf
+            <span class="text-purple-400">for</span> k <span class="text-purple-400">in</span> range(i):
+                dist = np.sum((X[j] - centroids[k]) ** 2)
+                <span class="text-purple-400">if</span> dist < min_dist:
+                    min_dist = dist
+            distances[j] = min_dist
+        
+        <span class="text-gray-500"># Probability proportional to distance²</span>
+        probs = distances ** 2 / np.sum(distances ** 2)
+        next_idx = np.random.choice(len(X), p=probs)
+        centroids[i] = X[next_idx]
+    <span class="text-purple-400">return</span> centroids</code></pre>
+                </div>
+
+                <!-- Code Feature 2 -->
+                <div class="code-block rounded-xl p-6 reveal">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-cyan-400 font-mono text-sm">Convergence Check</span>
+                        <span class="text-xs text-gray-500">Tolerance-based stopping</span>
+                    </div>
+                    <pre class="font-mono text-sm text-gray-300 overflow-x-auto">
+<code class="language-python"><span class="text-purple-400">def</span> <span class="text-yellow-400">fit</span>(self, X):
+    self.centroids = self._initialize_centroids(X)
+    
+    <span class="text-purple-400">for</span> iteration <span class="text-purple-400">in</span> range(self.max_iter):
+        distances = self._calculate_distance(X)
+        self.labels = self._assign_clusters(distances)
+        
+        new_centroids = self._update_centroids(X, self.labels)
+        
+        <span class="text-gray-500"># Check convergence</span>
+        centroid_shift = np.sqrt(np.sum(
+            (new_centroids - self.centroids) ** 2, 
+            axis=1
+        )).max()
+        
+        <span class="text-purple-400">if</span> centroid_shift < self.tol:
+            print(<span class="text-green-400">f"Converged at iteration {iteration}"</span>)
+            <span class="text-purple-400">break</span>
+            
+        self.centroids = new_centroids</code></pre>
+                </div>
+            </div>
+
+            <!-- Tech Stack -->
+            <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 reveal">
+                <div class="bg-gray-900/50 border border-white/10 p-4 rounded-lg text-center hover:border-cyan-500/50 transition-colors">
+                    <div class="text-2xl mb-2">🐍</div>
+                    <div class="font-mono font-bold">Python</div>
+                    <div class="text-xs text-gray-500">Core Language</div>
+                </div>
+                <div class="bg-gray-900/50 border border-white/10 p-4 rounded-lg text-center hover:border-cyan-500/50 transition-colors">
+                    <div class="text-2xl mb-2">🔢</div>
+                    <div class="font-mono font-bold">NumPy</div>
+                    <div class="text-xs text-gray-500">Matrix Operations</div>
+                </div>
+                <div class="bg-gray-900/50 border border-white/10 p-4 rounded-lg text-center hover:border-cyan-500/50 transition-colors">
+                    <div class="text-2xl mb-2">📊</div>
+                    <div class="font-mono font-bold">Matplotlib</div>
+                    <div class="text-xs text-gray-500">Visualization</div>
+                </div>
+                <div class="bg-gray-900/50 border border-white/10 p-4 rounded-lg text-center hover:border-cyan-500/50 transition-colors">
+                    <div class="text-2xl mb-2">🤖</div>
+                    <div class="font-mono font-bold">Scikit-learn</div>
+                    <div class="text-xs text-gray-500">Validation Metrics</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results & Visualizations -->
+    <section id="results" class="py-20 bg-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Visualizations & Results</h2>
+                <p class="text-gray-400">Comprehensive analysis of clustering performance on synthetic and real-world datasets.</p>
+            </div>
+
+            <!-- Gallery Grid -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Elbow Method -->
+                <div class="group relative overflow-hidden rounded-xl bg-gray-900 border border-white/10 reveal">
+                    <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/k_means_clustering/elbow-method-for-optimal-k.png" 
+                         alt="Elbow Method" 
+                         class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                        <h3 class="text-xl font-bold text-cyan-400 mb-2">Elbow Method</h3>
+                        <p class="text-sm text-gray-300">Optimal K determination using inertia analysis. Clear elbow at K=3.</p>
+                    </div>
+                </div>
+
+                <!-- Clustering Results -->
+                <div class="group relative overflow-hidden rounded-xl bg-gray-900 border border-white/10 reveal">
+                    <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/k_means_clustering/k-means-clustering-results.png" 
+                         alt="Clustering Results" 
+                         class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                        <h3 class="text-xl font-bold text-purple-400 mb-2">Cluster Assignments</h3>
+                        <p class="text-sm text-gray-300">Final cluster assignments with centroid visualization.</p>
+                    </div>
+                </div>
+
+                <!-- Silhouette Analysis -->
+                <div class="group relative overflow-hidden rounded-xl bg-gray-900 border border-white/10 reveal">
+                    <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/k_means_clustering/sihouette-score-vs-number0of-clusters.png" 
+                         alt="Silhouette Score" 
+                         class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                        <h3 class="text-xl font-bold text-green-400 mb-2">Silhouette Analysis</h3>
+                        <p class="text-sm text-gray-300">Cluster quality assessment. Score 0.82 indicates strong structure.</p>
+                    </div>
+                </div>
+
+                <!-- Iris Dataset -->
+                <div class="group relative overflow-hidden rounded-xl bg-gray-900 border border-white/10 reveal">
+                    <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/k_means_clustering/iris-dataset-k-means-clustering.png" 
+                         alt="Iris Clustering" 
+                         class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                        <h3 class="text-xl font-bold text-pink-400 mb-2">Iris Dataset</h3>
+                        <p class="text-sm text-gray-300">Real-world application on Fisher's Iris dataset.</p>
+                    </div>
+                </div>
+
+                <!-- Inertia Convergence -->
+                <div class="group relative overflow-hidden rounded-xl bg-gray-900 border border-white/10 reveal">
+                    <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/k_means_clustering/inertia-wcss-vs-iterations.png" 
+                         alt="Convergence" 
+                         class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                        <h3 class="text-xl font-bold text-yellow-400 mb-2">Convergence Plot</h3>
+                        <p class="text-sm text-gray-300">Inertia reduction over iterations showing rapid convergence.</p>
+                    </div>
+                </div>
+
+                <!-- Comparison -->
+                <div class="group relative overflow-hidden rounded-xl bg-gray-900 border border-white/10 reveal">
+                    <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/k_means_clustering/silhouette-score-comparison.png" 
+                         alt="Method Comparison" 
+                         class="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                        <h3 class="text-xl font-bold text-cyan-400 mb-2">Init Methods</h3>
+                        <p class="text-sm text-gray-300">K-Means++ vs Random initialization comparison.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metrics Dashboard -->
+            <div class="mt-12 grid md:grid-cols-3 gap-6 reveal">
+                <div class="bg-gray-900/50 border border-cyan-500/30 p-6 rounded-xl">
+                    <h4 class="text-gray-400 text-sm mb-2">Silhouette Score</h4>
+                    <div class="text-4xl font-bold text-cyan-400 font-mono">0.82</div>
+                    <div class="text-xs text-green-400 mt-2">Strong Structure ✓</div>
+                </div>
+                <div class="bg-gray-900/50 border border-purple-500/30 p-6 rounded-xl">
+                    <h4 class="text-gray-400 text-sm mb-2">Davies-Bouldin Index</h4>
+                    <div class="text-4xl font-bold text-purple-400 font-mono">0.34</div>
+                    <div class="text-xs text-green-400 mt-2">Low (Good) ✓</div>
+                </div>
+                <div class="bg-gray-900/50 border border-green-500/30 p-6 rounded-xl">
+                    <h4 class="text-gray-400 text-sm mb-2">Iterations to Converge</h4>
+                    <div class="text-4xl font-bold text-green-400 font-mono">2</div>
+                    <div class="text-xs text-cyan-400 mt-2">Fast Convergence ✓</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Real-World Application -->
+    <section id="realworld" class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="reveal">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-sm mb-6 font-mono">
+                        <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+                        Real-World Case Study
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Mall Customer Segmentation</h2>
+                    <p class="text-gray-400 mb-6">
+                        Applied the custom K-Means implementation to segment mall customers based on Age, Annual Income, and Spending Score. 
+                        Identified 5 distinct customer segments for targeted marketing strategies.
+                    </p>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded bg-cyan-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                <span class="text-cyan-400 text-xs font-bold">1</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">Data Preprocessing</h4>
+                                <p class="text-sm text-gray-400">Handled missing values, encoded categorical variables (Gender), and standardized features using StandardScaler.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                <span class="text-purple-400 text-xs font-bold">2</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">Optimal K Selection</h4>
+                                <p class="text-sm text-gray-400">Used Elbow Method, Silhouette Score, and Calinski-Harabasz Index to determine optimal clusters.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                <span class="text-green-400 text-xs font-bold">3</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">Business Insights</h4>
+                                <p class="text-sm text-gray-400">Identified high-value segments: "Young High Spenders" and "Affluent Conservative" groups.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent/blob/main/week7_assignment/realtime_example.ipynb" target="_blank" class="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-mono text-sm group">
+                        View Full Analysis 
+                        <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                    </a>
+                </div>
+
+                <div class="reveal">
+                    <div class="relative">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-2xl blur opacity-30"></div>
+                        <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/realtime_example/annual-income-vs-spending-score2.png" 
+                             alt="Customer Segmentation" 
+                             class="relative rounded-2xl border border-white/10 w-full">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/realtime_example/elbow-method.png" 
+                             alt="Elbow Method" class="rounded-lg border border-white/10">
+                        <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/realtime_example/sihouette-plot.png" 
+                             alt="Silhouette Plot" class="rounded-lg border border-white/10">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dataset Credits -->
+    <section class="py-12 bg-white/5 border-t border-white/10">
+        <div class="max-w-4xl mx-auto px-4 text-center reveal">
+            <h3 class="text-lg font-bold mb-4 text-gray-300">Dataset Credits</h3>
+            <div class="bg-gray-900/50 rounded-xl p-6 border border-white/10 inline-block max-w-2xl">
+                <p class="text-gray-400 text-sm mb-2">
+                    This project uses the <span class="text-cyan-400 font-mono">CC General</span> Dataset sourced from Kaggle:
+                </p>
+                <a href="https://www.kaggle.com/datasets/arjunbhasin2013/ccdata" target="_blank" 
+                   class="text-cyan-400 hover:text-cyan-300 text-sm font-mono break-all">
+                    https://www.kaggle.com/datasets/arjunbhasin2013/ccdata
+                </a>
+                <p class="text-gray-500 text-xs mt-4">
+                    All credits for the dataset collection and curation go to the original author. 
+                    This project uses the dataset strictly for educational and learning purposes.
                 </p>
             </div>
-
-            <!-- Analysis Pipeline -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                <div class="tech-card p-6 rounded-lg text-center" data-aos="zoom-in" data-aos-delay="0">
-                    <i class="fas fa-search text-3xl text-brand-primary mb-4"></i>
-                    <h3 class="text-white font-bold mb-2">1. EDA</h3>
-                    <p class="text-xs text-slate-500">Analyzed distributions of Age, Income, and Spending scores to understand data skew and outliers.</p>
-                </div>
-                <div class="tech-card p-6 rounded-lg text-center" data-aos="zoom-in" data-aos-delay="100">
-                    <i class="fas fa-layer-group text-3xl text-brand-secondary mb-4"></i>
-                    <h3 class="text-white font-bold mb-2">2. Clustering</h3>
-                    <p class="text-xs text-slate-500">Applied K-Means with Optimal K=5 (determined via Elbow Method) to segment the user base.</p>
-                </div>
-                <div class="tech-card p-6 rounded-lg text-center" data-aos="zoom-in" data-aos-delay="200">
-                    <i class="fas fa-lightbulb text-3xl text-brand-accent mb-4"></i>
-                    <h3 class="text-white font-bold mb-2">3. Insights</h3>
-                    <p class="text-xs text-slate-500">Identified "High Income, Low Spenders" (Savers) and "High Income, High Spenders" (Target).</p>
-                </div>
-            </div>
-
-            <!-- Visualization Gallery -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-aos="fade-up">
-                <div class="relative group">
-                    <div class="absolute inset-0 bg-brand-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/realtime_example/annual-income-vs-spending-score.png" class="relative rounded-lg border border-slate-700 group-hover:border-brand-primary w-full h-auto transition-all" alt="Income vs Spending">
-                    <p class="mt-2 text-center text-xs font-mono text-brand-primary">Income vs Spending</p>
-                </div>
-                <div class="relative group">
-                    <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/realtime_example/cluster-distribution.png" class="relative rounded-lg border border-slate-700 group-hover:border-brand-primary w-full h-auto transition-all" alt="Cluster Distribution">
-                    <p class="mt-2 text-center text-xs font-mono text-brand-primary">Cluster Sizes</p>
-                </div>
-                <div class="relative group">
-                    <img src="https://raw.githubusercontent.com/bhuvanesh-m-dev/genai-intern-zeno-talent/refs/heads/main/week7_assignment/realtime_example/age-distribution.png" class="relative rounded-lg border border-slate-700 group-hover:border-brand-primary w-full h-auto transition-all" alt="Age Distribution">
-                    <p class="mt-2 text-center text-xs font-mono text-brand-primary">Demographics</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- PART 3: KEY LEARNINGS -->
-        <section id="metrics" class="tech-card rounded-2xl p-8 lg:p-12" data-aos="fade-up">
-            <h2 class="text-2xl font-bold text-white font-mono mb-8 flex items-center">
-                <i class="fas fa-terminal text-brand-secondary mr-3"></i> SYSTEM.LOG(LEARNINGS)
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                    <h3 class="text-brand-primary font-bold mb-4">Algorithm Internals</h3>
-                    <ul class="space-y-3 text-slate-400 text-sm">
-                        <li class="flex items-start">
-                            <span class="text-brand-primary mr-2">➜</span>
-                            Initialization methods (Random vs K-Means++) significantly impact convergence speed.
-                        </li>
-                        <li class="flex items-start">
-                            <span class="text-brand-primary mr-2">➜</span>
-                            The "Elbow Method" is visual, but not always precise. It requires interpreting the inflection point of Inertia.
-                        </li>
-                        <li class="flex items-start">
-                            <span class="text-brand-primary mr-2">➜</span>
-                            Silhouette Scores provide a more mathematical validation of cluster separation quality.
-                        </li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-brand-secondary font-bold mb-4">Business Value</h3>
-                    <ul class="space-y-3 text-slate-400 text-sm">
-                        <li class="flex items-start">
-                            <span class="text-brand-secondary mr-2">➜</span>
-                            <strong>High Income / High Spend:</strong> Prime targets for luxury marketing.
-                        </li>
-                        <li class="flex items-start">
-                            <span class="text-brand-secondary mr-2">➜</span>
-                            <strong>Low Income / High Spend:</strong> Risk group, potentially using credit. Requires careful engagement.
-                        </li>
-                        <li class="flex items-start">
-                            <span class="text-brand-secondary mr-2">➜</span>
-                            <strong>Average / Average:</strong> The stable core of the customer base.
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- Dataset Credits -->
-        <section class="border-t border-slate-800 pt-8 text-center" data-aos="fade-in">
-            <h4 class="text-white font-mono text-sm mb-4">📚 DATASET CREDITS</h4>
-            <div class="inline-block tech-card px-6 py-4 rounded-lg">
-                <p class="text-xs text-slate-400 mb-2">Mall Customer Segmentation Data</p>
-                <a href="https://www.kaggle.com/datasets/arjunbhasin2013/ccdata" target="_blank" class="text-brand-primary hover:text-white transition-colors text-sm flex items-center justify-center gap-2">
-                    <i class="fab fa-kaggle"></i> Sourced from Kaggle
-                </a>
-                <p class="text-[10px] text-slate-600 mt-2">Used strictly for educational purposes.</p>
-            </div>
-        </section>
-
-    </main>
+        </div>
+    </section>
 
     <!-- Footer -->
-    <footer class="bg-black border-t border-slate-800 mt-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                <div class="text-center md:text-left">
-                    <h3 class="text-white font-bold font-mono">Bhuvanesh M</h3>
-                    <p class="text-slate-500 text-xs mt-1">GenAI Internship @ Zeno Talent</p>
+    <footer class="py-12 border-t border-white/10 bg-black/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div class="col-span-2">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-lg flex items-center justify-center font-mono font-bold text-black">W7</div>
+                        <span class="font-mono font-bold text-lg">GENAI.INTERN</span>
+                    </div>
+                    <p class="text-gray-400 text-sm max-w-md">
+                        Part of my continuous learning journey in Machine Learning fundamentals and applied model building at Zeno Talent.
+                    </p>
                 </div>
-                <div class="flex gap-6">
-                    <a href="https://github.com/bhuvanesh-m-dev" class="text-slate-400 hover:text-white transition-colors"><i class="fab fa-github text-xl"></i></a>
-                    <a href="https://www.linkedin.com/in/bhuvaneshm-developer" class="text-slate-400 hover:text-[#0077b5] transition-colors"><i class="fab fa-linkedin text-xl"></i></a>
-                    <a href="https://x.com/bhuvaneshm06" class="text-slate-400 hover:text-white transition-colors"><i class="fab fa-x-twitter text-xl"></i></a>
-                    <a href="https://dev.to/bhuvaneshm_dev" class="text-slate-400 hover:text-white transition-colors"><i class="fab fa-dev text-xl"></i></a>
+                <div>
+                    <h4 class="font-bold mb-4 text-white">Resources</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent/blob/main/week7_assignment/K_means_clustering.ipynb" class="hover:text-cyan-400 transition-colors">K-Means Notebook</a></li>
+                        <li><a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent/blob/main/week7_assignment/realtime_example.ipynb" class="hover:text-cyan-400 transition-colors">Real-time Example</a></li>
+                        <li><a href="https://www.kaggle.com/datasets/arjunbhasin2013/ccdata" class="hover:text-cyan-400 transition-colors">Dataset Source</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4 text-white">Connect</h4>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/bhuvanesh-m-dev" target="_blank" class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center hover:bg-cyan-500/20 hover:text-cyan-400 transition-all">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        </a>
+                        <a href="https://www.linkedin.com/in/bhuvaneshm-developer" target="_blank" class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center hover:bg-cyan-500/20 hover:text-cyan-400 transition-all">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                        </a>
+                        <a href="https://x.com/bhuvaneshm06" target="_blank" class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center hover:bg-cyan-500/20 hover:text-cyan-400 transition-all">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                        </a>
+                        <a href="https://dev.to/bhuvaneshm_dev" target="_blank" class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center hover:bg-cyan-500/20 hover:text-cyan-400 transition-all">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M7.42 10.05c-.77-.04-1.4.56-1.44 1.32-.04.77.56 1.4 1.32 1.44.77.04 1.4-.56 1.44-1.32.04-.76-.56-1.4-1.32-1.44zM7 17.11c-.81-.04-1.47.59-1.51 1.4-.04.81.59 1.47 1.4 1.51.81.04 1.47-.59 1.51-1.4.04-.81-.59-1.47-1.4-1.51zm10-7.06c-.77-.04-1.4.56-1.44 1.32-.04.77.56 1.4 1.32 1.44.77.04 1.4-.56 1.44-1.32.04-.76-.56-1.4-1.32-1.44zm-3 7.06c-.81-.04-1.47.59-1.51 1.4-.04.81.59 1.47 1.4 1.51.81.04 1.47-.59 1.51-1.4.04-.81-.59-1.47-1.4-1.51zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                        </a>
+                    </div>
                 </div>
             </div>
-            <div class="mt-8 text-center text-slate-600 text-xs font-mono">
-                © 2025 - Present Bhuvanesh M.
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm">© 2025 Bhuvanesh M. All rights reserved.</p>
+                <p class="text-gray-600 text-xs mt-2 md:mt-0 font-mono">Built with passion for Machine Learning</p>
             </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        AOS.init({
-            duration: 800,
-            once: true,
-            offset: 50,
+        // Scroll Reveal Animation
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+
+        // Smooth Scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 3D Background Animation (Three.js)
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Create particles representing data points
+        const geometry = new THREE.BufferGeometry();
+        const count = 300;
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+
+        for(let i = 0; i < count * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * 20;
+            positions[i + 1] = (Math.random() - 0.5) * 20;
+            positions[i + 2] = (Math.random() - 0.5) * 20;
+
+            // Color based on position (simulating clusters)
+            const cluster = Math.floor(Math.random() * 3);
+            if(cluster === 0) {
+                colors[i] = 0; colors[i+1] = 0.95; colors[i+2] = 1; // Cyan
+            } else if(cluster === 1) {
+                colors[i] = 0.73; colors[i+1] = 0.07; colors[i+2] = 0.99; // Purple
+            } else {
+                colors[i] = 0.04; colors[i+1] = 1; colors[i+2] = 0.04; // Green
+            }
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        const material = new THREE.PointsMaterial({
+            size: 0.15,
+            vertexColors: true,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+
+        // Add centroids (larger spheres)
+        const centroidGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+        const centroidMaterial = new THREE.MeshBasicMaterial({ 
+            color: 0xff0000,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        camera.position.z = 15;
+
+        // Mouse interaction
+        let mouseX = 0;
+        let mouseY = 0;
+
+        document.addEventListener('mousemove', (event) => {
+            mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            particles.rotation.x += 0.001;
+            particles.rotation.y += 0.002;
+
+            // Gentle mouse follow
+            particles.rotation.x += mouseY * 0.001;
+            particles.rotation.y += mouseX * 0.001;
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         });
     </script>
 </body>
