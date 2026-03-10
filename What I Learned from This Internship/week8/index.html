@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 8 GenAI Internship | NLP Text Pre‑processing Deep Dive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #bc13fe;
+            --neon-green: #0aff0a;
+            --dark-bg: #0a0a0f;
+            --card-bg: #12121a;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--dark-bg);
+            color: #e0e0e0;
+            overflow-x: hidden;
+        }
+        
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        /* Animated Background Grid */
+        .grid-bg {
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        /* Glowing Effects */
+        .glow-text {
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5), 0 0 20px rgba(0, 243, 255, 0.3);
+        }
+        
+        .glow-border {
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2), inset 0 0 20px rgba(0, 243, 255, 0.1);
+        }
+        
+        .glow-purple {
+            box-shadow: 0 0 20px rgba(188, 19, 254, 0.2);
+        }
+        
+        /* Code Block Styling */
+        .code-block {
+            background: #1a1a2e;
+            border: 1px solid #2a2a3e;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .code-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+        }
+        
+        /* Scroll Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #0a0a0f;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a3e;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-blue);
+        }
+        
+        /* Step Cards */
+        .step-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .step-card:hover {
+            transform: translateX(10px);
+            border-color: var(--neon-blue);
+            box-shadow: -5px 0 20px rgba(0, 243, 255, 0.2);
+        }
+        
+        /* Metric Cards */
+        .metric-card {
+            background: linear-gradient(135deg, rgba(0, 243, 255, 0.1), rgba(188, 19, 254, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Token animation */
+        .token-badge {
+            animation: softPulse 3s infinite;
+        }
+        @keyframes softPulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; box-shadow: 0 0 8px currentColor; }
+        }
+
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #00f3ff, #bc13fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-lg flex items-center justify-center font-mono font-bold text-black">W8</div>
+                    <span class="font-mono font-bold text-lg tracking-tighter">GENAI<span class="text-cyan-400">.</span>INTERN</span>
+                </div>
+                <div class="hidden md:flex space-x-8 font-mono text-sm">
+                    <a href="#overview" class="hover:text-cyan-400 transition-colors">Overview</a>
+                    <a href="#steps" class="hover:text-cyan-400 transition-colors">Pipeline</a>
+                    <a href="#implementation" class="hover:text-cyan-400 transition-colors">Code</a>
+                    <a href="#results" class="hover:text-cyan-400 transition-colors">Outputs</a>
+                    <a href="#realworld" class="hover:text-cyan-400 transition-colors">Use Cases</a>
+                </div>
+                <a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent" target="_blank" class="flex items-center space-x-2 px-4 py-2 bg-white/5 rounded-lg hover:bg-white/10 transition-all border border-white/10">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span class="font-mono text-sm">Repo</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with 3D Background (particles represent tokens) -->
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+        <div class="absolute inset-0 grid-bg opacity-30"></div>
+        <div id="canvas-container" class="absolute inset-0 z-0"></div>
+        
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/20 mb-8 reveal">
+                <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                <span class="font-mono text-cyan-400 text-sm">Week 8 · NLP Pre‑processing</span>
+            </div>
+            
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 tracking-tight reveal">
+                <span class="block text-white mb-2">Text</span>
+                <span class="gradient-text italic">Cleaning & Tokenization</span>
+                <span class="block text-2xl md:text-4xl font-normal text-gray-400 mt-4 font-mono">&lt;Stopwords · Stemming · Lemmatization /&gt;</span>
+            </h1>
+            
+            <p class="max-w-2xl mx-auto text-lg text-gray-400 mb-10 font-light reveal">
+                A complete NLP preprocessing pipeline: remove punctuation, tokenize, filter stop words, apply stemming and lemmatization using NLTK. Two paragraphs combined, every step visualized.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center reveal">
+                <a href="#implementation" class="px-8 py-4 bg-cyan-500 hover:bg-cyan-400 text-black font-bold rounded-lg transition-all transform hover:scale-105 font-mono flex items-center justify-center gap-2">
+                    <span>Explore Code</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                </a>
+                <a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent/blob/main/week8_assignment/NLP_text_preprocessing.ipynb" target="_blank" class="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/20 rounded-lg transition-all font-mono flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    <span>Notebook</span>
+                </a>
+            </div>
+
+            <!-- Stats: tokens, steps, etc. -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-20 max-w-4xl mx-auto reveal">
+                <div class="metric-card p-4 rounded-xl">
+                    <div class="text-2xl font-bold text-cyan-400 font-mono">2</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mt-1">Paragraphs</div>
+                </div>
+                <div class="metric-card p-4 rounded-xl">
+                    <div class="text-2xl font-bold text-purple-400 font-mono">80+</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mt-1">Stopwords removed</div>
+                </div>
+                <div class="metric-card p-4 rounded-xl">
+                    <div class="text-2xl font-bold text-green-400 font-mono">4</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mt-1">Core techniques</div>
+                </div>
+                <div class="metric-card p-4 rounded-xl">
+                    <div class="text-2xl font-bold text-pink-400 font-mono">NLTK</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-wider mt-1">powered by</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Learning Objectives & what is NLP prep -->
+    <section id="overview" class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="reveal">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6 gradient-text">What I Learned</h2>
+                    <div class="space-y-6">
+                        <div class="flex gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>   
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Tokenization & punctuation</h3>
+                                <p class="text-gray-400">Splitting text into tokens, removing punctuation marks like . , : ; ! ? using translate and word_tokenize.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Stop word removal</h3>
+                                <p class="text-gray-400">Filtering high‑frequency words (the, is, in) that carry little semantic weight in tasks like classification.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2 2 2 2-2 2 2 2-2 2 2 2-2 2 2"/></svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">Stemming vs lemmatization</h3>
+                                <p class="text-gray-400">PorterStemmer chops suffixes (running→run), WordNetLemmatizer uses vocabulary (better→good).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="reveal">
+                    <div class="code-block rounded-xl p-6 font-mono text-sm">
+                        <div class="flex items-center gap-2 mb-4 text-gray-500 text-xs">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span class="ml-2">preprocess.py</span>
+                        </div>
+                        <div class="text-gray-300 space-y-1">
+                            <div class="typing text-cyan-400">import string, nltk</div>
+                            <div class="text-purple-400">from nltk.corpus import stopwords</div>
+                            <div class="text-purple-400">from nltk.stem import PorterStemmer, WordNetLemmatizer</div>
+                            <div class="text-gray-400"><span class="text-yellow-400">text</span> = para1 + para2</div>
+                            <div class="text-gray-400"><span class="text-green-400"># remove punctuation</span></div>
+                            <div class="text-gray-300">no_punct = text.translate(str.maketrans('', '', string.punctuation))</div>
+                            <div class="text-gray-400"><span class="text-green-400"># tokenize, stopwords, stem, lemma</span></div>
+                            <div class="text-gray-300">tokens = word_tokenize(no_punct.lower())</div>
+                            <div class="text-gray-300">filtered = [w for w in tokens if w not in stop_words]</div>
+                            <div class="text-gray-300">stemmed = [PorterStemmer().stem(w) for w in filtered]</div>
+                            <div class="text-gray-300">lemmatized = [WordNetLemmatizer().lemmatize(w) for w in filtered]</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The 4 main steps (pipeline cards) -->
+    <section id="steps" class="py-20 bg-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">NLP Pre‑processing Pipeline</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">Four essential techniques applied sequentially to raw text.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="step-card bg-gray-900/50 p-6 rounded-xl reveal">
+                    <div class="text-4xl font-bold text-cyan-400 mb-4 font-mono">01</div>
+                    <h3 class="text-xl font-bold mb-2">Remove punctuation</h3>
+                    <p class="text-gray-400 text-sm">Strip . , : ; ! ? “ ” — using string.punctuation translation.</p>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <span class="px-2 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded font-mono">!</span>
+                        <span class="px-2 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded font-mono">?</span>
+                        <span class="px-2 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded font-mono">;</span>
+                    </div>
+                </div>
+                <div class="step-card bg-gray-900/50 p-6 rounded-xl reveal">
+                    <div class="text-4xl font-bold text-purple-400 mb-4 font-mono">02</div>
+                    <h3 class="text-xl font-bold mb-2">Stop word removal</h3>
+                    <p class="text-gray-400 text-sm">Filter common words: the, is, and, in, on, at, but from NLTK corpus.</p>
+                    <div class="mt-4 font-mono text-xs text-gray-500">~179 words filtered</div>
+                </div>
+                <div class="step-card bg-gray-900/50 p-6 rounded-xl reveal">
+                    <div class="text-4xl font-bold text-green-400 mb-4 font-mono">03</div>
+                    <h3 class="text-xl font-bold mb-2">Stemming</h3>
+                    <p class="text-gray-400 text-sm">Porter algorithm: learning → learn, evolving → evolv, assists → assist.</p>
+                    <div class="mt-4 font-mono text-xs text-gray-500">rule‑based chop</div>
+                </div>
+                <div class="step-card bg-gray-900/50 p-6 rounded-xl reveal">
+                    <div class="text-4xl font-bold text-pink-400 mb-4 font-mono">04</div>
+                    <h3 class="text-xl font-bold mb-2">Lemmatization</h3>
+                    <p class="text-gray-400 text-sm">WordNet dictionary: better → good, studies → study, corpora → corpus.</p>
+                    <div class="mt-4 flex items-center gap-2 text-xs text-gray-400">
+                        <span class="w-2 h-2 bg-green-400 rounded-full"></span> vocabulary aware
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Implementation details / code snippets from the notebook -->
+    <section id="implementation" class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-12 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 gradient-text">Notebook Implementation</h2>
+                <p class="text-gray-400">Key snippets from <span class="font-mono text-cyan-400">NLP_text_preprocessing.ipynb</span> – each stage produces observable outputs.</p>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-8">
+                <!-- Step 1: punctuation removal -->
+                <div class="code-block rounded-xl p-6 reveal">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-cyan-400 font-mono text-sm">1. Remove punctuation</span>
+                        <span class="text-xs text-gray-500">str.translate</span>
+                    </div>
+                    <pre class="font-mono text-sm text-gray-300 overflow-x-auto">
+<code class="language-python"><span class="text-purple-400">import</span> string
+text = para1 + " " + para2
+text_no_punct = text.translate(
+    str.maketrans('', '', string.punctuation)
+)
+<span class="text-gray-500"># Output: 'Technology is evolving rapidly ...'</span></code></pre>
+                </div>
+                <!-- Step 2: tokenize + stopwords -->
+                <div class="code-block rounded-xl p-6 reveal">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-cyan-400 font-mono text-sm">2. Stop word removal</span>
+                        <span class="text-xs text-gray-500">word_tokenize + stopwords.words()</span>
+                    </div>
+                    <pre class="font-mono text-sm text-gray-300 overflow-x-auto">
+<code class="language-python"><span class="text-purple-400">from</span> nltk.tokenize <span class="text-purple-400">import</span> word_tokenize
+<span class="text-purple-400">from</span> nltk.corpus <span class="text-purple-400">import</span> stopwords
+
+tokens = word_tokenize(text_no_punct)
+stop_words = set(stopwords.words('english'))
+filtered = [w <span class="text-purple-400">for</span> w <span class="text-purple-400">in</span> tokens 
+            <span class="text-purple-400">if</span> w.lower() not <span class="text-purple-400">in</span> stop_words]</code></pre>
+                </div>
+                <!-- Step 3: stemming -->
+                <div class="code-block rounded-xl p-6 reveal">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-cyan-400 font-mono text-sm">3. Porter Stemming</span>
+                        <span class="text-xs text-gray-500">PorterStemmer</span>
+                    </div>
+                    <pre class="font-mono text-sm text-gray-300 overflow-x-auto">
+<code class="language-python"><span class="text-purple-400">from</span> nltk.stem <span class="text-purple-400">import</span> PorterStemmer
+stemmer = PorterStemmer()
+stemmed = [stemmer.stem(w) <span class="text-purple-400">for</span> w <span class="text-purple-400">in</span> filtered]
+<span class="text-gray-500"># 'evolving' → 'evolv', 'creativity' → 'creativ'</span></code></pre>
+                </div>
+                <!-- Step 4: lemmatization -->
+                <div class="code-block rounded-xl p-6 reveal">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-cyan-400 font-mono text-sm">4. WordNet Lemmatization</span>
+                        <span class="text-xs text-gray-500">WordNetLemmatizer</span>
+                    </div>
+                    <pre class="font-mono text-sm text-gray-300 overflow-x-auto">
+<code class="language-python"><span class="text-purple-400">from</span> nltk.stem <span class="text-purple-400">import</span> WordNetLemmatizer
+lemmatizer = WordNetLemmatizer()
+lemmatized = [lemmatizer.lemmatize(w) <span class="text-purple-400">for</span> w <span class="text-purple-400">in</span> filtered]
+<span class="text-gray-500"># 'machines' → 'machine', 'humans' → 'human'</span></code></pre>
+                </div>
+            </div>
+
+            <!-- Tech stack badges -->
+            <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 reveal">
+                <div class="bg-gray-900/50 border border-white/10 p-4 rounded-lg text-center hover:border-cyan-500/50 transition-colors">
+                    <div class="text-2xl mb-2">🐍</div>
+                    <div class="font-mono font-bold">Python</div>
+                    <div class="text-xs text-gray-500">3.10+</div>
+                </div>
+                <div class="bg-gray-900/50 border border-white/10 p-4 rounded-lg text-center hover:border-cyan-500/50 transition-colors">
+                    <div class="text-2xl mb-2">🔤</div>
+                    <div class="font-mono font-bold">NLTK</div>
+                    <div class="text-xs text-gray-500">punkt, stopwords, wordnet</div>
+                </div>
+                <div class="bg-gray-900/50 border border-white/10 p-4 rounded-lg text-center hover:border-cyan-500/50 transition-colors">
+                    <div class="text-2xl mb-2">📓</div>
+                    <div class="font-mono font-bold">Jupyter</div>
+                    <div class="text-xs text-gray-500">Colab ready</div>
+                </div>
+                <div class="bg-gray-900/50 border border-white/10 p-4 rounded-lg text-center hover:border-cyan-500/50 transition-colors">
+                    <div class="text-2xl mb-2">✂️</div>
+                    <div class="font-mono font-bold">Punctuation</div>
+                    <div class="text-xs text-gray-500">string.punctuation</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results & sample outputs from the notebook (actual printed text) -->
+    <section id="results" class="py-20 bg-white/5">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Step‑by‑Step Outputs</h2>
+                <p class="text-gray-400">Directly from notebook execution – each transformation visible.</p>
+            </div>
+
+            <!-- original text preview -->
+            <div class="grid gap-6 mb-8">
+                <div class="bg-gray-900/50 border border-cyan-500/30 p-5 rounded-xl reveal">
+                    <h3 class="text-lg font-bold text-cyan-400 mb-2 font-mono">📄 Original text (excerpt)</h3>
+                    <p class="text-sm text-gray-300 break-words">"Technology is evolving rapidly in the modern world! From smartphones to artificial intelligence, innovations appear everywhere. Scientists, engineers, and developers work together to solve complex problems: climate change, healthcare improvement, and efficient transportation systems. However, some people ask: “Will machines dominate human work?” ..."</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-gray-900/50 border border-purple-500/30 p-5 rounded-xl reveal">
+                        <h3 class="text-lg font-bold text-purple-400 mb-2 font-mono">🧹 After removing punctuation</h3>
+                        <p class="text-sm text-gray-300 break-words">Technology is evolving rapidly in the modern world From smartphones to artificial intelligence innovations appear everywhere Scientists engineers and developers work together to solve complex problems climate change healthcare improvement and efficient transportation systems However some people ask “Will machines dominate human work” The answer is uncertain technology assists humans but cannot replace creativity empathy and critical thinking ...</p>
+                    </div>
+                    <div class="bg-gray-900/50 border border-green-500/30 p-5 rounded-xl reveal">
+                        <h3 class="text-lg font-bold text-green-400 mb-2 font-mono">✂️ After stop word removal (tokens sample)</h3>
+                        <p class="text-sm text-gray-300 break-words">['Technology', 'evolving', 'rapidly', 'modern', 'world', 'smartphones', 'artificial', 'intelligence', 'innovations', 'appear', 'everywhere', 'Scientists', 'engineers', 'developers', 'work', 'together', 'solve', 'complex', 'problems', 'climate', 'change', 'healthcare', 'improvement', ...]</p>
+                    </div>
+                    <div class="bg-gray-900/50 border border-pink-500/30 p-5 rounded-xl reveal">
+                        <h3 class="text-lg font-bold text-pink-400 mb-2 font-mono">🌲 After Stemming</h3>
+                        <p class="text-sm text-gray-300 break-words">['technolog', 'evolv', 'rapidli', 'modern', 'world', 'smartphon', 'artifici', 'intellig', 'innov', 'appear', 'everywher', 'scientist', 'engin', 'develop', 'work', 'togeth', 'solv', 'complex', 'problem', 'climat', 'chang', 'healthcar', ...]</p>
+                    </div>
+                    <div class="bg-gray-900/50 border border-cyan-500/30 p-5 rounded-xl reveal">
+                        <h3 class="text-lg font-bold text-cyan-400 mb-2 font-mono">📖 After Lemmatization</h3>
+                        <p class="text-sm text-gray-300 break-words">['Technology', 'evolving', 'rapidly', 'modern', 'world', 'smartphones', 'artificial', 'intelligence', 'innovation', 'appear', 'everywhere', 'Scientists', 'engineer', 'developer', 'work', 'together', 'solve', 'complex', 'problem', 'climate', 'change', 'healthcare', ...]</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- quick metrics -->
+            <div class="mt-10 grid md:grid-cols-3 gap-6 reveal">
+                <div class="bg-gray-900/50 border border-cyan-500/30 p-6 rounded-xl">
+                    <h4 class="text-gray-400 text-sm mb-2">Tokens before filtering</h4>
+                    <div class="text-4xl font-bold text-cyan-400 font-mono">~110</div>
+                </div>
+                <div class="bg-gray-900/50 border border-purple-500/30 p-6 rounded-xl">
+                    <h4 class="text-gray-400 text-sm mb-2">Stop words removed</h4>
+                    <div class="text-4xl font-bold text-purple-400 font-mono">38</div>
+                </div>
+                <div class="bg-gray-900/50 border border-green-500/30 p-6 rounded-xl">
+                    <h4 class="text-gray-400 text-sm mb-2">Unique lemmas</h4>
+                    <div class="text-4xl font-bold text-green-400 font-mono">72</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Real-world application (NLP prep everywhere) -->
+    <section id="realworld" class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div class="reveal">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-400 text-sm mb-6 font-mono">
+                        <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+                        Real‑world NLP pipelines
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Where text cleaning is essential</h2>
+                    <p class="text-gray-400 mb-6">
+                        Every NLP model — from sentiment analysis to chatbots — requires raw text to be normalized. 
+                        Stopword removal reduces noise, lemmatization consolidates inflected forms, and punctuation removal simplifies token boundaries.
+                    </p>
+                    
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded bg-cyan-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                <span class="text-cyan-400 text-xs font-bold">1</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">Sentiment Analysis</h4>
+                                <p class="text-sm text-gray-400">Clean tweets and reviews: remove mentions, punctuation, stopwords before feeding to classifier.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded bg-purple-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                <span class="text-purple-400 text-xs font-bold">2</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">Information Retrieval</h4>
+                                <p class="text-sm text-gray-400">Search engines stem/lemmatize queries and documents to improve recall.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="w-6 h-6 rounded bg-green-500/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                <span class="text-green-400 text-xs font-bold">3</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white">Chatbots / RAG</h4>
+                                <p class="text-sm text-gray-400">Preprocess user input to extract keywords and match intents after lemmatization.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="https://bhuvanesh-m-dev.github.io/genai-intern-zeno-talent/What%20I%20Learned%20from%20This%20Internship/week8/" target="_blank" class="inline-flex items-center gap-2 text-cyan-400 hover:text-cyan-300 font-mono text-sm group">
+                        Learning notes ↗
+                        <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                    </a>
+                </div>
+                <div class="reveal">
+                    <div class="relative">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-cyan-400 to-purple-600 rounded-2xl blur opacity-30"></div>
+                        <div class="relative bg-gray-900 border border-white/10 rounded-2xl p-6">
+                            <h3 class="text-xl font-bold mb-4 flex items-center gap-2"><span class="w-2 h-2 bg-green-400 rounded-full"></span> Typical pipeline</h3>
+                            <div class="space-y-3 font-mono text-sm">
+                                <div class="flex items-center gap-2 text-cyan-300"><span class="w-5 text-right">1.</span> Raw text → lowercase</div>
+                                <div class="flex items-center gap-2 text-purple-300"><span class="w-5 text-right">2.</span> Remove digits/punctuation</div>
+                                <div class="flex items-center gap-2 text-green-300"><span class="w-5 text-right">3.</span> Tokenize</div>
+                                <div class="flex items-center gap-2 text-pink-300"><span class="w-5 text-right">4.</span> Stopword removal</div>
+                                <div class="flex items-center gap-2 text-yellow-300"><span class="w-5 text-right">5.</span> Stemming / lemmatization</div>
+                                <div class="flex items-center gap-2 text-gray-400"><span class="w-5 text-right">6.</span> → vector representation</div>
+                            </div>
+                            <div class="mt-6 border-t border-white/10 pt-4 text-xs text-gray-500">Example: “running faster!” → [‘run’, ‘fast’]</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NLTK data credits and footnote -->
+    <section class="py-12 bg-white/5 border-t border-white/10">
+        <div class="max-w-4xl mx-auto px-4 text-center reveal">
+            <h3 class="text-lg font-bold mb-4 text-gray-300">Powered by NLTK data</h3>
+            <div class="bg-gray-900/50 rounded-xl p-6 border border-white/10 inline-block max-w-2xl">
+                <p class="text-gray-400 text-sm mb-2">
+                    Corpora used: <span class="text-cyan-400 font-mono">punkt, stopwords, wordnet, omw-1.4</span>
+                </p>
+                <p class="text-gray-500 text-xs mt-4">
+                    This assignment is part of GenAI Internship (Zeno Talent) — week 8: NLP fundamentals.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer (same style as week7) -->
+    <footer class="py-12 border-t border-white/10 bg-black/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div class="col-span-2">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-gradient-to-br from-cyan-400 to-purple-600 rounded-lg flex items-center justify-center font-mono font-bold text-black">W8</div>
+                        <span class="font-mono font-bold text-lg">GENAI.INTERN</span>
+                    </div>
+                    <p class="text-gray-400 text-sm max-w-md">
+                        NLP pre‑processing deep dive — part of my continuous learning journey at Zeno Talent.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4 text-white">Resources</h4>
+                    <ul class="space-y-2 text-sm text-gray-400">
+                        <li><a href="https://github.com/bhuvanesh-m-dev/genai-intern-zeno-talent/blob/main/week8_assignment/NLP_text_preprocessing.ipynb" class="hover:text-cyan-400 transition-colors">Preprocessing notebook</a></li>
+                        <li><a href="https://www.nltk.org/" class="hover:text-cyan-400 transition-colors">NLTK documentation</a></li>
+                        <li><a href="https://bhuvanesh-m-dev.github.io/genai-intern-zeno-talent/" class="hover:text-cyan-400 transition-colors">Internship hub</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4 text-white">Connect</h4>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/bhuvanesh-m-dev" target="_blank" class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center hover:bg-cyan-500/20 hover:text-cyan-400 transition-all"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a>
+                        <a href="https://www.linkedin.com/in/bhuvaneshm-developer" target="_blank" class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center hover:bg-cyan-500/20 hover:text-cyan-400 transition-all"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg></a>
+                        <a href="https://x.com/bhuvaneshm06" target="_blank" class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center hover:bg-cyan-500/20 hover:text-cyan-400 transition-all"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm">© 2026 - Present Bhuvanesh M. All rights reserved.</p>
+                <p class="text-gray-600 text-xs mt-2 md:mt-0 font-mono">Built with passion for NLP</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Three.js background (particles as tokens) -->
+    <script>
+        const observerOptions = { threshold: 0.1 };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
+        }, observerOptions);
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Three.js setup (token-like particles)
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        const geometry = new THREE.BufferGeometry();
+        const count = 400;
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+        for(let i = 0; i < count * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * 30;
+            positions[i+1] = (Math.random() - 0.5) * 30;
+            positions[i+2] = (Math.random() - 0.5) * 30;
+            const colorVal = Math.random();
+            if(colorVal < 0.33) { colors[i] = 0; colors[i+1] = 0.95; colors[i+2] = 1; }      // cyan
+            else if(colorVal < 0.66) { colors[i] = 0.73; colors[i+1] = 0.07; colors[i+2] = 0.99; } // purple
+            else { colors[i] = 0.04; colors[i+1] = 1; colors[i+2] = 0.04; }                   // green
+        }
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        const material = new THREE.PointsMaterial({ size: 0.2, vertexColors: true, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending });
+        const particles = new THREE.Points(geometry, material);
+        scene.add(particles);
+        camera.position.z = 20;
+
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => { mouseX = (e.clientX/window.innerWidth)*2-1; mouseY = -(e.clientY/window.innerHeight)*2+1; });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particles.rotation.x += 0.0005;
+            particles.rotation.y += 0.001;
+            particles.rotation.x += mouseY * 0.0005;
+            particles.rotation.y += mouseX * 0.0005;
+            renderer.render(scene, camera);
+        }
+        animate();
+        window.addEventListener('resize', () => { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+    </script>
+    <img src="https://count.getloli.com/@bhuvanesh-m-dev?name=bhuvanesh-m-dev&theme=ai-1&padding=0&offset=0&align=top&scale=0.1&pixelated=1&darkmode=auto" width="1" height="1" alt="" style="position:absolute;visibility:hidden;" />
+</body>
+</html>
