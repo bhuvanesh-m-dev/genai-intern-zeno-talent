@@ -1,0 +1,195 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": []
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "jH7d8SCxsEpb",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "5738a039-de3c-4d43-9225-d5e69c8509fe"
+      },
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "[nltk_data] Downloading package punkt to /root/nltk_data...\n",
+            "[nltk_data]   Package punkt is already up-to-date!\n",
+            "[nltk_data] Downloading package punkt_tab to /root/nltk_data...\n",
+            "[nltk_data]   Unzipping tokenizers/punkt_tab.zip.\n",
+            "[nltk_data] Downloading package stopwords to /root/nltk_data...\n",
+            "[nltk_data]   Package stopwords is already up-to-date!\n",
+            "[nltk_data] Downloading package wordnet to /root/nltk_data...\n",
+            "[nltk_data]   Package wordnet is already up-to-date!\n",
+            "[nltk_data] Downloading package omw-1.4 to /root/nltk_data...\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "True"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 8
+        }
+      ],
+      "source": [
+        "import nltk\n",
+        "\n",
+        "nltk.download('punkt')\n",
+        "nltk.download('punkt_tab')\n",
+        "nltk.download('stopwords')\n",
+        "nltk.download('wordnet')\n",
+        "nltk.download('omw-1.4')"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "\n",
+        "nltk.download('punkt')\n",
+        "nltk.download('stopwords')\n",
+        "nltk.download('wordnet')"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "lUIgao89sfuf",
+        "outputId": "ce646418-3f19-41bb-fbf9-bdf5ef6ddfd5"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "[nltk_data] Downloading package punkt to /root/nltk_data...\n",
+            "[nltk_data]   Unzipping tokenizers/punkt.zip.\n",
+            "[nltk_data] Downloading package stopwords to /root/nltk_data...\n",
+            "[nltk_data]   Unzipping corpora/stopwords.zip.\n",
+            "[nltk_data] Downloading package wordnet to /root/nltk_data...\n"
+          ]
+        },
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/plain": [
+              "True"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 2
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "print(\"==== NLP Text Preprocessing Program ====\\n\")\n",
+        "\n",
+        "\n",
+        "para1 = '''Technology is evolving rapidly in the modern world! From smartphones to artificial intelligence, innovations appear everywhere. Scientists, engineers, and developers work together to solve complex problems: climate change, healthcare improvement, and efficient transportation systems. However, some people ask: “Will machines dominate human work?” The answer is uncertain; technology assists humans but cannot replace creativity, empathy, and critical thinking.'''\n",
+        "para2 = '''Education has also changed significantly because of digital tools. Online platforms, virtual classrooms, and AI tutors help students learn faster and smarter. Teachers encourage curiosity, collaboration, and innovation; these skills are essential for the future. But one question remains: how can students balance technology and traditional learning methods? Clearly, technology should support learning—not control it!'''\n",
+        "\n",
+        "# Combine paragraphs\n",
+        "text = para1 + \" \" + para2\n",
+        "\n",
+        "print(\"\\n\\nOriginal Text:\\n\")\n",
+        "print(text)\n",
+        "\n",
+        "\n",
+        "text_no_punct = text.translate(str.maketrans('', '', string.punctuation))\n",
+        "\n",
+        "print(\"\\nText after Removing Punctuation:\\n\")\n",
+        "print(text_no_punct)\n",
+        "\n",
+        "\n",
+        "\n",
+        "tokens = word_tokenize(text_no_punct)\n",
+        "\n",
+        "stop_words = set(stopwords.words('english'))\n",
+        "\n",
+        "filtered_words = [word for word in tokens if word.lower() not in stop_words]\n",
+        "\n",
+        "print(\"\\nAfter Stop Word Removal:\\n\")\n",
+        "print(filtered_words)\n",
+        "\n",
+        "stemmer = PorterStemmer()\n",
+        "\n",
+        "stemmed_words = [stemmer.stem(word) for word in filtered_words]\n",
+        "\n",
+        "print(\"\\nAfter Stemming:\\n\")\n",
+        "print(stemmed_words)\n",
+        "\n",
+        "lemmatizer = WordNetLemmatizer()\n",
+        "\n",
+        "lemmatized_words = [lemmatizer.lemmatize(word) for word in filtered_words]\n",
+        "\n",
+        "print(\"\\nAfter Lemmatization:\\n\")\n",
+        "print(lemmatized_words)\n",
+        "\n",
+        "print(\"\\n==== Text Preprocessing Completed ====\")"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "RZ1fHGN3spP4",
+        "outputId": "d49ba477-c8f4-47ad-eda1-db7d7a63c81e"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "==== NLP Text Preprocessing Program ====\n",
+            "\n",
+            "\n",
+            "\n",
+            "Original Text:\n",
+            "\n",
+            "Technology is evolving rapidly in the modern world! From smartphones to artificial intelligence, innovations appear everywhere. Scientists, engineers, and developers work together to solve complex problems: climate change, healthcare improvement, and efficient transportation systems. However, some people ask: “Will machines dominate human work?” The answer is uncertain; technology assists humans but cannot replace creativity, empathy, and critical thinking. Education has also changed significantly because of digital tools. Online platforms, virtual classrooms, and AI tutors help students learn faster and smarter. Teachers encourage curiosity, collaboration, and innovation; these skills are essential for the future. But one question remains: how can students balance technology and traditional learning methods? Clearly, technology should support learning—not control it!\n",
+            "\n",
+            "Text after Removing Punctuation:\n",
+            "\n",
+            "Technology is evolving rapidly in the modern world From smartphones to artificial intelligence innovations appear everywhere Scientists engineers and developers work together to solve complex problems climate change healthcare improvement and efficient transportation systems However some people ask “Will machines dominate human work” The answer is uncertain technology assists humans but cannot replace creativity empathy and critical thinking Education has also changed significantly because of digital tools Online platforms virtual classrooms and AI tutors help students learn faster and smarter Teachers encourage curiosity collaboration and innovation these skills are essential for the future But one question remains how can students balance technology and traditional learning methods Clearly technology should support learning—not control it\n",
+            "\n",
+            "After Stop Word Removal:\n",
+            "\n",
+            "['Technology', 'evolving', 'rapidly', 'modern', 'world', 'smartphones', 'artificial', 'intelligence', 'innovations', 'appear', 'everywhere', 'Scientists', 'engineers', 'developers', 'work', 'together', 'solve', 'complex', 'problems', 'climate', 'change', 'healthcare', 'improvement', 'efficient', 'transportation', 'systems', 'However', 'people', 'ask', '“', 'machines', 'dominate', 'human', 'work', '”', 'answer', 'uncertain', 'technology', 'assists', 'humans', 'replace', 'creativity', 'empathy', 'critical', 'thinking', 'Education', 'also', 'changed', 'significantly', 'digital', 'tools', 'Online', 'platforms', 'virtual', 'classrooms', 'AI', 'tutors', 'help', 'students', 'learn', 'faster', 'smarter', 'Teachers', 'encourage', 'curiosity', 'collaboration', 'innovation', 'skills', 'essential', 'future', 'one', 'question', 'remains', 'students', 'balance', 'technology', 'traditional', 'learning', 'methods', 'Clearly', 'technology', 'support', 'learning—not', 'control']\n",
+            "\n",
+            "After Stemming:\n",
+            "\n",
+            "['technolog', 'evolv', 'rapidli', 'modern', 'world', 'smartphon', 'artifici', 'intellig', 'innov', 'appear', 'everywher', 'scientist', 'engin', 'develop', 'work', 'togeth', 'solv', 'complex', 'problem', 'climat', 'chang', 'healthcar', 'improv', 'effici', 'transport', 'system', 'howev', 'peopl', 'ask', '“', 'machin', 'domin', 'human', 'work', '”', 'answer', 'uncertain', 'technolog', 'assist', 'human', 'replac', 'creativ', 'empathi', 'critic', 'think', 'educ', 'also', 'chang', 'significantli', 'digit', 'tool', 'onlin', 'platform', 'virtual', 'classroom', 'ai', 'tutor', 'help', 'student', 'learn', 'faster', 'smarter', 'teacher', 'encourag', 'curios', 'collabor', 'innov', 'skill', 'essenti', 'futur', 'one', 'question', 'remain', 'student', 'balanc', 'technolog', 'tradit', 'learn', 'method', 'clearli', 'technolog', 'support', 'learning—not', 'control']\n",
+            "\n",
+            "After Lemmatization:\n",
+            "\n",
+            "['Technology', 'evolving', 'rapidly', 'modern', 'world', 'smartphones', 'artificial', 'intelligence', 'innovation', 'appear', 'everywhere', 'Scientists', 'engineer', 'developer', 'work', 'together', 'solve', 'complex', 'problem', 'climate', 'change', 'healthcare', 'improvement', 'efficient', 'transportation', 'system', 'However', 'people', 'ask', '“', 'machine', 'dominate', 'human', 'work', '”', 'answer', 'uncertain', 'technology', 'assist', 'human', 'replace', 'creativity', 'empathy', 'critical', 'thinking', 'Education', 'also', 'changed', 'significantly', 'digital', 'tool', 'Online', 'platform', 'virtual', 'classroom', 'AI', 'tutor', 'help', 'student', 'learn', 'faster', 'smarter', 'Teachers', 'encourage', 'curiosity', 'collaboration', 'innovation', 'skill', 'essential', 'future', 'one', 'question', 'remains', 'student', 'balance', 'technology', 'traditional', 'learning', 'method', 'Clearly', 'technology', 'support', 'learning—not', 'control']\n",
+            "\n",
+            "==== Text Preprocessing Completed ====\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
